@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Typography, Button, Space } from 'antd';
 import { SoundOutlined, ArrowRightOutlined, HomeOutlined } from '@ant-design/icons';
-import { AudioClip } from '../shared/types';
+import { AudioClip } from '../interfaces';
 
 const { Title, Paragraph } = Typography;
 

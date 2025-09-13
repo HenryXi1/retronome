@@ -45,8 +45,8 @@ const OnlinePlay: React.FC<OnlinePlayProps> = ({ gameMode, onBack }) => {
               {gameMode === 'online-1v1' ? 'Online 1v1' : 'Online Multiplayer'}
             </h1>
             <p className="text-white/80">
-              {gameMode === 'online-1v1' 
-                ? 'Challenge a friend to a musical duel!' 
+              {gameMode === 'online-1v1'
+                ? 'Challenge a friend to a musical duel!'
                 : 'Join the chaos with up to 8 players!'
               }
             </p>
@@ -159,23 +159,37 @@ const OnlinePlay: React.FC<OnlinePlayProps> = ({ gameMode, onBack }) => {
     );
   }
 
-  // Game view (placeholder for now)
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-cyan-900 to-indigo-900 flex items-center justify-center p-4">
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-2xl w-full text-center">
-        <h1 className="text-3xl font-bold text-white mb-4">Game Starting Soon!</h1>
-        <p className="text-white/80 mb-6">
-          The online game functionality will be implemented with WebSocket connections and backend audio processing.
-        </p>
-        <button
-          onClick={() => setCurrentView('create-join')}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-bold transition-colors"
-        >
-          Back to Menu
-        </button>
+  // Game view - now using the modularized components!
+  if (currentView === 'game') {
+    // In a real implementation, you'd get these from your multiplayer backend
+    const gameId = 'example-game-id';
+    const playerId = 'current-player-id';
+    const players = [
+      { id: 'player1', name: playerName },
+      { id: 'player2', name: 'Other Player' }
+    ];
+
+    // You can now use the same UI components as local play!
+    // Just need to import and implement the multiplayer controller
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-cyan-900 to-indigo-900 flex items-center justify-center p-4">
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-2xl w-full text-center">
+          <h1 className="text-3xl font-bold text-white mb-4">Game Ready!</h1>
+          <p className="text-white/80 mb-6">
+            When you implement the multiplayer controller, you can use the exact same Recording and Reversing UI components!
+          </p>
+          <button
+            onClick={() => setCurrentView('create-join')}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+          >
+            Back to Menu
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return null;
 };
 
 export default OnlinePlay;

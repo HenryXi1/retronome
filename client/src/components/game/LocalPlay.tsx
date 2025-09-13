@@ -1,8 +1,11 @@
 import React from 'react';
-import GameFlow from './GameFlow';
+import GenericGameFlow from './GenericGameFlow';
+import { useLocalGameController } from './controllers';
 
 const LocalPlay: React.FC = () => {
-  return <GameFlow />;
+  const controller = useLocalGameController();
+
+  return <GenericGameFlow controller={controller} />;
 };
 
 export default LocalPlay;
