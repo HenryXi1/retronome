@@ -23,8 +23,8 @@ const ReversingPhase: React.FC<ReversingPhaseProps> = ({
   onPlayAudio,
   onNextPhase
 }) => {
-  const currentPlayerName = currentPlayer === 'player1' ? player1Name : player2Name;
-  const otherPlayerName = currentPlayer === 'player1' ? player2Name : player1Name;
+  const listeningPlayerName = currentPlayer === 'player1' ? player1Name : player2Name;
+  const recordingPlayerName = currentPlayer === 'player1' ? player2Name : player1Name;
 
 
   return (
@@ -51,10 +51,10 @@ const ReversingPhase: React.FC<ReversingPhaseProps> = ({
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '20px'
+          gap: '12px'
         }}>
           {/* Reverse icon */}
-          <div style={{ fontSize: '50px', marginBottom: '15px' }}>
+          <div style={{ fontSize: '50px', marginBottom: '8px' }}>
             🔄
           </div>
 
@@ -63,20 +63,20 @@ const ReversingPhase: React.FC<ReversingPhaseProps> = ({
             color: '#2d3748',
             fontSize: '2rem',
             fontWeight: '800',
-            marginBottom: '8px',
+            marginBottom: '4px',
             textTransform: 'uppercase',
             letterSpacing: '1px'
           }}>
-            LISTEN TO THE REVERSED AUDIO
+            LISTEN TO REVERSED AUDIO
           </Title>
 
           {/* Subtitle */}
           <Paragraph style={{
             color: '#718096',
             fontSize: '1rem',
-            marginBottom: '30px'
+            marginBottom: '8px'
           }}>
-            {currentPlayerName}, listen carefully to {otherPlayerName}'s reversed recording!
+            {listeningPlayerName}, listen carefully to {recordingPlayerName}'s reversed recording!
           </Paragraph>
 
           {/* Play reversed audio button */}
@@ -96,25 +96,10 @@ const ReversingPhase: React.FC<ReversingPhaseProps> = ({
               borderRadius: '50%',
               fontSize: '24px',
               boxShadow: '0 8px 25px rgba(0, 0, 0, 0.25)',
-              marginBottom: '30px'
+              marginBottom: '8px'
             }}
-          >
-            🎵 PLAY
-          </Button>
+          />
 
-          {/* Instruction pill */}
-          <div style={{
-            background: 'rgba(66, 153, 225, 0.1)',
-            color: '#2b6cb0',
-            padding: '12px 24px',
-            borderRadius: '50px',
-            border: '2px solid rgba(66, 153, 225, 0.2)',
-            fontSize: '0.95rem',
-            fontWeight: '600',
-            marginBottom: '30px'
-          }}>
-            💡 Listen carefully! You'll need to sing this reversed audio back
-          </div>
 
           {/* Ready to record button */}
           <Button

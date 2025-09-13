@@ -6,6 +6,7 @@ interface PageLayoutProps {
   subtitle?: string;
   showBackButton?: boolean;
   backPath?: string;
+  backgroundClass?: string;
   children: React.ReactNode;
 }
 
@@ -14,10 +15,11 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   subtitle,
   showBackButton = true,
   backPath = '/',
+  backgroundClass = 'game-background',
   children
 }) => {
   return (
-    <div className="min-h-screen game-background">
+    <div className={`min-h-screen ${backgroundClass} relative`}>
       <PageHeader
         title={title}
         subtitle={subtitle}
@@ -25,10 +27,18 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         backPath={backPath}
       />
 
-      <div className="flex items-center justify-center min-h-[calc(100vh-120px)] p-6">
-        <div style={{ width: '100%', maxWidth: '1200px' }}>
-          {children}
-        </div>
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '100%',
+          maxWidth: '1200px',
+          padding: '24px'
+        }}
+      >
+        {children}
       </div>
     </div>
   );

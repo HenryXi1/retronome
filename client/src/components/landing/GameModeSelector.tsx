@@ -1,24 +1,47 @@
 import React from 'react';
-import { Space } from 'antd';
-import { HomeOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
+import { Space, Typography } from 'antd';
+import { HomeOutlined, TeamOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '../shared/PageLayout';
 import GameModeCard from './GameModeCard';
 
+const { Title } = Typography;
+
 const GameModeSelector: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleModeSelect = (mode: 'local' | 'online-1v1' | 'online-multiplayer') => {
+  const handleModeSelect = (mode: 'local' | 'online-multiplayer') => {
     navigate(`/${mode}/start`);
   };
 
   return (
     <PageLayout
-      title="🎵 REVERSE AUDIO 🎵"
-      subtitle="Choose your game mode and start the musical chaos!"
+      title=""
+      subtitle=""
       showBackButton={false}
+      backgroundClass="landing-background"
     >
-      <div className="glass-card p-8 max-w-2xl w-full">
+      <div className="glass-card max-w-3xl w-full" style={{ padding: '48px' }}>
+        {/* Title and subtitle inside the card */}
+        <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+          <Title level={1} style={{
+            color: '#1e293b',
+            marginBottom: '1rem',
+            fontSize: '3rem',
+            fontWeight: '700',
+            textTransform: 'uppercase',
+            letterSpacing: '2px',
+          }}>
+            🎵 REVERSE AUDIO 🎵
+          </Title>
+          <Typography.Text style={{
+            color: '#1e293b',
+            fontSize: '1.5rem',
+            fontWeight: '600',
+          }}>
+            Choose your game mode and start the musical chaos!
+          </Typography.Text>
+        </div>
 
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <GameModeCard
@@ -26,17 +49,8 @@ const GameModeSelector: React.FC = () => {
             description="Play with a friend on the same device. Perfect for couch co-op!"
             icon={<HomeOutlined style={{ fontSize: '2rem', color: 'white' }} />}
             onClick={() => handleModeSelect('local')}
-            color="#10b981"
-            hoverColor="#059669"
-          />
-
-          <GameModeCard
-            title="Online 1v1"
-            description="Challenge a friend online. Share a room code to play together!"
-            icon={<UserOutlined style={{ fontSize: '2rem', color: 'white' }} />}
-            onClick={() => handleModeSelect('online-1v1')}
-            color="#3b82f6"
-            hoverColor="#2563eb"
+            color="#E879F9"
+            hoverColor="#D946EF"
           />
 
           <GameModeCard
@@ -44,8 +58,8 @@ const GameModeSelector: React.FC = () => {
             description="Up to 8 players! Watch the audio get more chaotic with each round."
             icon={<TeamOutlined style={{ fontSize: '2rem', color: 'white' }} />}
             onClick={() => handleModeSelect('online-multiplayer')}
-            color="#8b5cf6"
-            hoverColor="#7c3aed"
+            color="#A855F7"
+            hoverColor="#9333EA"
           />
         </Space>
       </div>

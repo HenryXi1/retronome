@@ -15,7 +15,6 @@ function App(): React.JSX.Element {
 
           {/* Game start pages */}
           <Route path="/local/start" element={<GameStartPage gameMode="local" />} />
-          <Route path="/online-1v1/start" element={<GameStartPage gameMode="online-1v1" />} />
           <Route path="/online-multiplayer/start" element={<GameStartPage gameMode="online-multiplayer" />} />
 
           {/* Actual game pages */}

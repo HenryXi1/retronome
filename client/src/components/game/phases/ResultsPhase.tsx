@@ -16,8 +16,6 @@ interface ResultsPhaseProps {
 
 const ResultsPhase: React.FC<ResultsPhaseProps> = ({
   audioClips,
-  player1Name,
-  player2Name,
   onPlayAudio,
   onNextRound,
   onBackToHome
@@ -28,9 +26,13 @@ const ResultsPhase: React.FC<ResultsPhaseProps> = ({
     <Card className="glass-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
       <div className="text-center mb-6">
         <Title level={2} style={{ color: '#1e293b', marginBottom: '1rem' }}>
-          🏆 Results
+          Results
         </Title>
-        <Paragraph style={{ color: '#64748b', fontSize: '1.125rem' }}>
+        <Paragraph style={{
+          color: '#1e293b',
+          fontSize: '1.125rem',
+          fontWeight: '600',
+        }}>
           Here's how you did this round!
         </Paragraph>
       </div>
@@ -38,11 +40,12 @@ const ResultsPhase: React.FC<ResultsPhaseProps> = ({
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* Current Round Result */}
         {latestClip && (
-          <Card style={{
-            borderRadius: '16px'
+          <div className="glass-card" style={{
+            borderRadius: '16px',
+            padding: '2rem'
           }}>
             <div className="text-center">
-              <Space size="large" style={{ marginTop: '2rem' }}>
+              <Space size="large">
                 <Button
                   type="primary"
                   onClick={() => latestClip.originalUrl && onPlayAudio(latestClip.originalUrl)}
@@ -82,7 +85,7 @@ const ResultsPhase: React.FC<ResultsPhaseProps> = ({
                 )}
               </Space>
             </div>
-          </Card>
+          </div>
         )}
 
         {/* Action Buttons */}

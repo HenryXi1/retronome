@@ -7,6 +7,7 @@ export const useGameLogic = () => {
   const [gameState, setGameState] = useState<GameState>({
     currentPhase: 'recording', // Start directly in recording phase
     currentPlayer: 'player1',
+    roundStartingPlayer: 'player1', // Track who started this round
     player1Name: localStorage.getItem('player1Name') || 'Player 1',
     player2Name: localStorage.getItem('player2Name') || 'Player 2',
     timeLeft: recordingTimer,
@@ -126,10 +127,11 @@ export const useGameLogic = () => {
       const reversedUrl = await reverseAudio(gameState.recordedAudio);
 
       if (gameState.currentPhase === 'recording') {
-        // First recording - save original and reversed, go to listening phase
+        // First recording - save original and reversed, switch to other player for listening phase
         setGameState(prev => ({
           ...prev,
           currentPhase: 'listening',
+          currentPlayer: prev.currentPlayer === 'player1' ? 'player2' : 'player1', // Switch to other player
           originalRecordingUrl: prev.currentAudioUrl,
           currentReversedUrl: reversedUrl,
           recordedAudio: null,
@@ -197,18 +199,25 @@ export const useGameLogic = () => {
   };
 
   const switchPlayer = () => {
-    setGameState(prev => ({
-      ...prev,
-      currentPlayer: prev.currentPlayer === 'player1' ? 'player2' : 'player1',
-      currentPhase: 'recording',
-      recordedAudio: null,
-      currentAudioUrl: null,
-      canRerecord: true,
-      originalSong: '',
-      currentGuess: '',
-      currentReversedUrl: null,
-      timeLeft: recordingTimer
-    }));
+    setGameState(prev => {
+      // Switch to the next round starting player (opposite of who started this round)
+      const nextStartingPlayer = prev.roundStartingPlayer === 'player1' ? 'player2' : 'player1';
+      return {
+        ...prev,
+        currentPlayer: nextStartingPlayer,
+        roundStartingPlayer: nextStartingPlayer,
+        currentPhase: 'recording',
+        recordedAudio: null,
+        currentAudioUrl: null,
+        canRerecord: true,
+        originalSong: '',
+        currentGuess: '',
+        currentReversedUrl: null,
+        originalRecordingUrl: null,
+        reversedAttemptUrl: null,
+        timeLeft: recordingTimer
+      };
+    });
   };
 
   const updateGameState = (updates: Partial<GameState>) => {
