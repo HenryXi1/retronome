@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography, Button, Space } from 'antd';
-import { AudioOutlined, StopOutlined, CheckOutlined, ReloadOutlined, SoundOutlined } from '@ant-design/icons';
+import { AudioOutlined, StopOutlined, CheckOutlined, ReloadOutlined } from '@ant-design/icons';
 
 const { Title, Paragraph } = Typography;
 
@@ -12,12 +12,10 @@ interface RecordingPhaseProps {
   maxTime: number;
   isRecording: boolean;
   recordedAudio: Blob | null;
-  currentAudioUrl: string | null;
   onStartRecording: () => void;
   onStopRecording: () => void;
   onConfirmRecording: () => void;
   onRerecord: () => void;
-  onPlayAudio: (url: string) => void;
 }
 
 const RecordingPhase: React.FC<RecordingPhaseProps> = ({
@@ -28,12 +26,10 @@ const RecordingPhase: React.FC<RecordingPhaseProps> = ({
   maxTime,
   isRecording,
   recordedAudio,
-  currentAudioUrl,
   onStartRecording,
   onStopRecording,
   onConfirmRecording,
-  onRerecord,
-  onPlayAudio
+  onRerecord
 }) => {
   const currentPlayerName = currentPlayer === 'player1' ? player1Name : player2Name;
   const progressPercent = (timeLeft / maxTime) * 100;

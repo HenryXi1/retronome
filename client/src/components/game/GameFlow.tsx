@@ -13,22 +13,19 @@ const GameFlow: React.FC = () => {
     stopRecording,
     playAudio,
     nextPhase,
-    switchPlayer
+    switchPlayer,
+    confirmRecording,
+    rerecord
   } = useGameLogic();
 
   const maxTime = parseInt(localStorage.getItem('recordingTimer') || '30');
 
   const handleConfirmRecording = () => {
-    nextPhase();
+    confirmRecording();
   };
 
   const handleRerecord = () => {
-    updateGameState({
-      recordedAudio: null,
-      currentAudioUrl: null,
-      timeLeft: maxTime,
-      isRecording: false
-    });
+    rerecord();
   };
 
 
@@ -49,12 +46,10 @@ const GameFlow: React.FC = () => {
             maxTime={maxTime}
             isRecording={gameState.isRecording}
             recordedAudio={gameState.recordedAudio}
-            currentAudioUrl={gameState.currentAudioUrl}
             onStartRecording={startRecording}
             onStopRecording={stopRecording}
             onConfirmRecording={handleConfirmRecording}
             onRerecord={handleRerecord}
-            onPlayAudio={playAudio}
           />
         );
 

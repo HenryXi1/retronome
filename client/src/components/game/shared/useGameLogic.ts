@@ -92,26 +92,93 @@ export const useGameLogic = () => {
     audio.play();
   };
 
-  // Audio reversal will be handled automatically in the backend
-  // The reversed audio URL will be provided when needed
+  // Call the reverse API to get reversed audio
+  const reverseAudio = async (audioBlob: Blob): Promise<string> => {
+    try {
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'recording.webm');
 
+      const response = await fetch('http://localhost:8000/reverse/', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reverse audio');
+      }
+
+      const reversedBlob = await response.blob();
+      return URL.createObjectURL(reversedBlob);
+    } catch (error) {
+      console.error('Error reversing audio:', error);
+      throw error;
+    }
+  };
+
+  const confirmRecording = async () => {
+    if (!gameState.recordedAudio) {
+      console.error('No recorded audio to confirm');
+      return;
+    }
+
+    try {
+      // Call the reverse API to get reversed audio
+      const reversedUrl = await reverseAudio(gameState.recordedAudio);
+
+      if (gameState.currentPhase === 'recording') {
+        // First recording - save original and reversed, go to listening phase
+        setGameState(prev => ({
+          ...prev,
+          currentPhase: 'listening',
+          originalRecordingUrl: prev.currentAudioUrl,
+          currentReversedUrl: reversedUrl,
+          recordedAudio: null,
+          currentAudioUrl: null,
+          timeLeft: recordingTimer
+        }));
+      } else if (gameState.currentPhase === 'recording-reversed') {
+        // Second recording (attempt) - save attempt and go to results
+        const newClip: AudioClip = {
+          id: Date.now().toString(),
+          player: gameState.currentPlayer,
+          originalUrl: gameState.originalRecordingUrl || '',
+          reversedUrl: reversedUrl, // This is the reversed version of their attempt
+          timestamp: new Date(),
+          originalSong: '',
+          guess: '',
+          isCorrect: false
+        };
+
+        setGameState(prev => ({
+          ...prev,
+          currentPhase: 'results',
+          reversedAttemptUrl: reversedUrl,
+          audioClips: [...prev.audioClips, newClip],
+          recordedAudio: null,
+          currentAudioUrl: null
+        }));
+      }
+    } catch (error) {
+      console.error('Error confirming recording:', error);
+      // Handle error - maybe show a toast or keep user in recording phase
+    }
+  };
+
+  const rerecord = () => {
+    setGameState(prev => ({
+      ...prev,
+      recordedAudio: null,
+      currentAudioUrl: null,
+      timeLeft: recordingTimer,
+      isRecording: false
+    }));
+  };
 
   const nextPhase = () => {
     setGameState(prev => {
       switch (prev.currentPhase) {
         case 'setup':
           return { ...prev, currentPhase: 'recording' };
-        case 'recording':
-          // Save the original recording and go to listening phase
-          return {
-            ...prev,
-            currentPhase: 'listening',
-            originalRecordingUrl: prev.currentAudioUrl,
-            currentReversedUrl: prev.currentAudioUrl, // For now, use same audio (you'll replace with API call)
-            recordedAudio: null,
-            currentAudioUrl: null,
-            timeLeft: recordingTimer
-          };
         case 'listening':
           // User clicked "I'm ready to record" - go to recording-reversed phase
           return {
@@ -120,25 +187,6 @@ export const useGameLogic = () => {
             recordedAudio: null,
             currentAudioUrl: null,
             timeLeft: recordingTimer
-          };
-        case 'recording-reversed':
-          // Save the reversed attempt and go to results
-          const newClip: AudioClip = {
-            id: Date.now().toString(),
-            player: prev.currentPlayer,
-            originalUrl: prev.originalRecordingUrl || '',
-            reversedUrl: prev.currentAudioUrl || '',
-            timestamp: new Date(),
-            originalSong: '',
-            guess: '',
-            isCorrect: false
-          };
-
-          return {
-            ...prev,
-            currentPhase: 'results',
-            reversedAttemptUrl: prev.currentAudioUrl,
-            audioClips: [...prev.audioClips, newClip]
           };
         case 'results':
           return { ...prev, currentPhase: 'setup' };
@@ -175,6 +223,8 @@ export const useGameLogic = () => {
     playAudio,
     nextPhase,
     switchPlayer,
+    confirmRecording,
+    rerecord,
     mediaRecorderRef,
     audioRef
   };
