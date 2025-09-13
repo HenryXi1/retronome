@@ -1,9 +1,9 @@
 import React from 'react';
-import { Card, Typography, Button, Space, Row, Col } from 'antd';
+import { Card, Typography, Button, Space } from 'antd';
 import { SoundOutlined, ArrowRightOutlined, HomeOutlined } from '@ant-design/icons';
 import { AudioClip } from '../shared/types';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 interface ResultsPhaseProps {
   audioClips: AudioClip[];
@@ -23,9 +23,6 @@ const ResultsPhase: React.FC<ResultsPhaseProps> = ({
   onBackToHome
 }) => {
   const latestClip = audioClips[audioClips.length - 1];
-  const isCorrect = latestClip?.isCorrect;
-  const correctCount = audioClips.filter(clip => clip.isCorrect).length;
-  const totalRounds = audioClips.length;
 
   return (
     <Card className="glass-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -41,122 +38,52 @@ const ResultsPhase: React.FC<ResultsPhaseProps> = ({
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* Current Round Result */}
         {latestClip && (
-          <Card style={{ 
-            background: isCorrect 
-              ? 'rgba(16, 185, 129, 0.1)' 
-              : 'rgba(239, 68, 68, 0.1)',
-            border: `1px solid ${isCorrect ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+          <Card style={{
             borderRadius: '16px'
           }}>
             <div className="text-center">
-              <div style={{ 
-                fontSize: '4rem', 
-                marginBottom: '1rem' 
-              }}>
-                {isCorrect ? '🎉' : '😅'}
-              </div>
-              
-              <Title level={3} style={{ 
-                color: isCorrect ? '#059669' : '#dc2626',
-                marginBottom: '1rem'
-              }}>
-                {isCorrect ? 'Correct!' : 'Not quite right!'}
-              </Title>
-              
-              <Row gutter={[16, 16]} justify="center">
-                <Col span={12}>
-                  <Card style={{ 
-                    background: 'rgba(255, 255, 255, 0.5)',
-                    borderRadius: '12px'
-                  }}>
-                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                      <Text strong style={{ color: '#1e293b' }}>Original Song:</Text>
-                      <Text style={{ color: '#64748b' }}>{latestClip.originalSong}</Text>
-                    </Space>
-                  </Card>
-                </Col>
-                
-                <Col span={12}>
-                  <Card style={{ 
-                    background: 'rgba(255, 255, 255, 0.5)',
-                    borderRadius: '12px'
-                  }}>
-                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                      <Text strong style={{ color: '#1e293b' }}>Your Guess:</Text>
-                      <Text style={{ color: '#64748b' }}>{latestClip.guess}</Text>
-                    </Space>
-                  </Card>
-                </Col>
-              </Row>
-              
-              <div style={{ marginTop: '1rem' }}>
+              <Space size="large" style={{ marginTop: '2rem' }}>
                 <Button
-                  type="text"
+                  type="primary"
                   onClick={() => latestClip.originalUrl && onPlayAudio(latestClip.originalUrl)}
                   icon={<SoundOutlined />}
-                  style={{ 
-                    color: '#64748b',
-                    marginRight: '1rem'
+                  size="large"
+                  style={{
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                    border: 'none',
+                    height: '60px',
+                    padding: '0 30px',
+                    borderRadius: '30px',
+                    fontSize: '16px',
+                    fontWeight: '600'
                   }}
                 >
-                  Original
+                  🎵 PLAY ORIGINAL
                 </Button>
+
                 {latestClip.reversedUrl && (
                   <Button
-                    type="text"
+                    type="primary"
                     onClick={() => onPlayAudio(latestClip.reversedUrl!)}
                     icon={<SoundOutlined />}
-                    style={{ color: '#64748b' }}
+                    size="large"
+                    style={{
+                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                      border: 'none',
+                      height: '60px',
+                      padding: '0 30px',
+                      borderRadius: '30px',
+                      fontSize: '16px',
+                      fontWeight: '600'
+                    }}
                   >
-                    Reversed
+                    🔄 PLAY REVERSED
                   </Button>
                 )}
-              </div>
+              </Space>
             </div>
           </Card>
         )}
-
-        {/* Game Statistics */}
-        <Card style={{ 
-          background: 'rgba(59, 130, 246, 0.1)', 
-          border: '1px solid rgba(59, 130, 246, 0.2)',
-          borderRadius: '12px'
-        }}>
-          <div className="text-center">
-            <Title level={4} style={{ color: '#1e40af', marginBottom: '1rem' }}>
-              📊 Game Statistics
-            </Title>
-            <Row gutter={[16, 16]}>
-              <Col span={8}>
-                <div>
-                  <Text strong style={{ color: '#1e40af', fontSize: '1.5rem' }}>
-                    {totalRounds}
-                  </Text>
-                  <br />
-                  <Text style={{ color: '#64748b' }}>Rounds Played</Text>
-                </div>
-              </Col>
-              <Col span={8}>
-                <div>
-                  <Text strong style={{ color: '#1e40af', fontSize: '1.5rem' }}>
-                    {correctCount}
-                  </Text>
-                  <br />
-                  <Text style={{ color: '#64748b' }}>Correct Guesses</Text>
-                </div>
-              </Col>
-              <Col span={8}>
-                <div>
-                  <Text strong style={{ color: '#1e40af', fontSize: '1.5rem' }}>
-                    {totalRounds > 0 ? Math.round((correctCount / totalRounds) * 100) : 0}%
-                  </Text>
-                  <br />
-                  <Text style={{ color: '#64748b' }}>Accuracy</Text>
-                </div>
-              </Col>
-            </Row>
-          </div>
-        </Card>
 
         {/* Action Buttons */}
         <div className="text-center">
@@ -178,7 +105,7 @@ const ResultsPhase: React.FC<ResultsPhaseProps> = ({
             >
               Next Round
             </Button>
-            
+
             <Button
               onClick={onBackToHome}
               className="large-button"

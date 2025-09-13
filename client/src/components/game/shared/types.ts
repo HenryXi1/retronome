@@ -1,4 +1,4 @@
-export type GamePhase = 'setup' | 'recording' | 'listening' | 'reversing' | 'guessing' | 'results';
+export type GamePhase = 'setup' | 'recording' | 'listening' | 'recording-reversed' | 'results';
 export type Player = 'player1' | 'player2';
 
 export interface AudioClip {
@@ -26,4 +26,6 @@ export interface GameState {
   originalSong: string;
   currentGuess: string;
   currentReversedUrl: string | null;
+  originalRecordingUrl: string | null;
+  reversedAttemptUrl: string | null;
 }

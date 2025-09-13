@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useGameLogic } from './shared/useGameLogic';
 import PageLayout from '../shared/PageLayout';
 import RecordingPhase from './phases/RecordingPhase';
-import ListeningPhase from './phases/ListeningPhase';
 import ReversingPhase from './phases/ReversingPhase';
-import GuessingPhase from './phases/GuessingPhase';
 import ResultsPhase from './phases/ResultsPhase';
 
 const GameFlow: React.FC = () => {
@@ -14,15 +12,11 @@ const GameFlow: React.FC = () => {
     startRecording,
     stopRecording,
     playAudio,
-    reverseAudio,
-    submitGuess,
     nextPhase,
     switchPlayer
   } = useGameLogic();
 
   const maxTime = parseInt(localStorage.getItem('recordingTimer') || '30');
-
-  const [isReversing, setIsReversing] = useState(false);
 
   const handleConfirmRecording = () => {
     nextPhase();
@@ -32,22 +26,11 @@ const GameFlow: React.FC = () => {
     updateGameState({
       recordedAudio: null,
       currentAudioUrl: null,
-      canRerecord: false
+      timeLeft: maxTime,
+      isRecording: false
     });
   };
 
-  const handleStartReversing = async () => {
-    if (gameState.recordedAudio) {
-      setIsReversing(true);
-      await reverseAudio(gameState.recordedAudio);
-      setIsReversing(false);
-      nextPhase();
-    }
-  };
-
-  const handleSubmitGuess = () => {
-    submitGuess();
-  };
 
   const handleNextRound = () => {
     switchPlayer();
@@ -56,6 +39,7 @@ const GameFlow: React.FC = () => {
   const renderCurrentPhase = () => {
     switch (gameState.currentPhase) {
       case 'recording':
+      case 'recording-reversed':
         return (
           <RecordingPhase
             currentPlayer={gameState.currentPlayer}
@@ -65,48 +49,28 @@ const GameFlow: React.FC = () => {
             maxTime={maxTime}
             isRecording={gameState.isRecording}
             recordedAudio={gameState.recordedAudio}
-            canRerecord={gameState.canRerecord}
+            currentAudioUrl={gameState.currentAudioUrl}
             onStartRecording={startRecording}
             onStopRecording={stopRecording}
             onConfirmRecording={handleConfirmRecording}
             onRerecord={handleRerecord}
+            onPlayAudio={playAudio}
           />
         );
 
       case 'listening':
         return (
-          <ListeningPhase
+          <ReversingPhase
             currentPlayer={gameState.currentPlayer}
             player1Name={gameState.player1Name}
             player2Name={gameState.player2Name}
             currentAudioUrl={gameState.currentAudioUrl}
+            currentReversedUrl={gameState.currentReversedUrl}
             onPlayAudio={playAudio}
             onNextPhase={nextPhase}
           />
         );
 
-      case 'reversing':
-        return (
-          <ReversingPhase
-            isReversing={isReversing}
-            onStartReversing={handleStartReversing}
-            onNextPhase={nextPhase}
-          />
-        );
-
-      case 'guessing':
-        return (
-          <GuessingPhase
-            currentPlayer={gameState.currentPlayer}
-            player1Name={gameState.player1Name}
-            player2Name={gameState.player2Name}
-            currentReversedUrl={gameState.currentReversedUrl}
-            currentGuess={gameState.currentGuess}
-            onPlayReversedAudio={playAudio}
-            onGuessChange={(guess) => updateGameState({ currentGuess: guess })}
-            onSubmitGuess={handleSubmitGuess}
-          />
-        );
 
       case 'results':
         return (
@@ -126,12 +90,14 @@ const GameFlow: React.FC = () => {
   };
 
   return (
-    <PageLayout 
-      title="🎵 Reverse Audio Game" 
+    <PageLayout
+      title="🎵 Reverse Audio Game"
       subtitle={`${gameState.player1Name} vs ${gameState.player2Name}`}
       backPath="/"
     >
-      {renderCurrentPhase()}
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        {renderCurrentPhase()}
+      </div>
     </PageLayout>
   );
 };
