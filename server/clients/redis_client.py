@@ -1,13 +1,6 @@
-import os
-
 import redis
-from dotenv import load_dotenv
 
-load_dotenv()
-
-REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
-REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
-REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
+from config import REDIS_HOST, REDIS_PASSWORD, REDIS_PORT
 
 redis_client = redis.Redis(
     host=REDIS_HOST,

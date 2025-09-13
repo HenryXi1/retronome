@@ -6,10 +6,12 @@ router = APIRouter()
 
 
 @router.websocket('/game/')
-async def oneVersusOne(websocket: WebSocket):
+async def game(websocket: WebSocket):
     await websocket.accept()
     controller = GameController(websocket)
     try:
+        print('New WebSocket connection established')
         await controller.run()
-    except Exception:
+    except Exception as e:
+        print(f'WebSocket connection closed with error: {e}')
         await websocket.close()

@@ -3,7 +3,7 @@ import io
 from fastapi import APIRouter, UploadFile
 from fastapi.responses import StreamingResponse
 
-from app.utils import reverse_audio
+from game_core import reverse_audio
 
 router = APIRouter()
 

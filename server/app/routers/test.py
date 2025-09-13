@@ -12,12 +12,7 @@ html = """
     <body>
         <h1>WebSocket JSON Test Client</h1>
         <div id="messages"></div>
-        <input
-            type="text"
-            id="messageText"
-            placeholder='Type a message (will be sent as JSON)...'
-        >
-        <button onclick="sendMessage()">Send JSON</button>
+        <button onclick="sendCreate()">Create Room</button>
         <script>
             var ws = new WebSocket("ws://localhost:8000/game/");
             ws.onmessage = function(event) {
@@ -31,17 +26,14 @@ html = """
                 }
                 messages.appendChild(message);
             };
-            function sendMessage() {
-                var input = document.getElementById('messageText');
-                var text = input.value;
-                var jsonMsg = {"message": text};
+            function sendCreate() {
+                var jsonMsg = { "type": "create_room", "player_name": "test" };
                 ws.send(JSON.stringify(jsonMsg));
                 var messages = document.getElementById('messages');
                 var sentMsg = document.createElement('div');
                 sentMsg.textContent = '[SEND] ' + JSON.stringify(jsonMsg);
                 sentMsg.style.color = 'gray';
                 messages.appendChild(sentMsg);
-                input.value = '';
             }
         </script>
     </body>
