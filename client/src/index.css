@@ -20,61 +20,17 @@ body {
   min-height: 100vh;
 }
 
-/* Custom background pattern */
-.game-background {
-  background: linear-gradient(45deg, 
-    #FF6B6B 0%, 
-    #4ECDC4 25%, 
-    #45B7D1 50%, 
-    #96CEB4 75%, 
-    #FFEAA7 100%);
-  background-size: 400% 400%;
+/* Universal gradient for all pages */
+.landing-background,
+.setup-background,
+.game-background,
+.results-background {
+  background: linear-gradient(135deg, #DA4167 0%, #8B5A96 100%);
   position: relative;
   overflow: hidden;
-  animation: gradientShift 8s ease infinite;
 }
 
-.game-background::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
-    radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.25) 0%, transparent 50%),
-    radial-gradient(circle at 60% 40%, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
-  background-size: 150px 150px, 200px 200px, 180px 180px, 220px 220px;
-  animation: float 15s ease-in-out infinite;
-}
 
-.game-background::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(circle at 10% 90%, rgba(255, 215, 0, 0.4) 0%, transparent 40%),
-    radial-gradient(circle at 90% 10%, rgba(255, 105, 180, 0.3) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.2) 0%, transparent 40%);
-  background-size: 300px 300px, 250px 250px, 400px 400px;
-  animation: float 20s ease-in-out infinite reverse;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
 
 /* Custom button styles */
 .custom-button {
@@ -88,12 +44,12 @@ body {
 }
 
 .custom-button:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+  filter: brightness(0.9) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
 }
 
 .custom-button:active {
-  transform: translateY(0px) !important;
+  filter: brightness(0.8) !important;
 }
 
 /* Large button for main actions */
@@ -133,6 +89,11 @@ body {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }

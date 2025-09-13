@@ -15,6 +15,7 @@ export interface AudioClip {
 export interface GameState {
   currentPhase: GamePhase;
   currentPlayer: Player;
+  roundStartingPlayer: Player; // Track who started the current round
   player1Name: string;
   player2Name: string;
   timeLeft: number;

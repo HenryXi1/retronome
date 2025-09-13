@@ -32,10 +32,6 @@ const GameModeCard: React.FC<GameModeCardProps> = ({
                 cursor: 'pointer',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
-            bodyStyle={{
-                padding: '20px',
-            }}
-            className="hover:scale-105"
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div>
@@ -45,6 +41,7 @@ const GameModeCard: React.FC<GameModeCardProps> = ({
                     <Title level={3} style={{
                         color: 'white',
                         marginBottom: '8px',
+                        marginTop: '8px',
                         fontSize: '1.5rem',
                         fontWeight: 'bold'
                     }}>

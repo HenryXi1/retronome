@@ -2,7 +2,6 @@ export interface GameModeInfo {
     title: string;
     description: string;
     instructions: string[];
-    icon: string;
 }
 
 export interface TimerOption {
@@ -10,7 +9,7 @@ export interface TimerOption {
     label: string;
 }
 
-export const GAME_MODE_INFO: Record<'local' | 'online-1v1' | 'online-multiplayer', GameModeInfo> = {
+export const GAME_MODE_INFO: Record<'local' | 'online-multiplayer', GameModeInfo> = {
     local: {
         title: 'Local Play',
         description: 'Perfect for couch co-op gaming!',
@@ -20,20 +19,7 @@ export const GAME_MODE_INFO: Record<'local' | 'online-1v1' | 'online-multiplayer
             'Listen to the reversed audio',
             'Try to guess each other\'s songs',
             'See who can guess the most correctly!'
-        ],
-        icon: '🏠'
-    },
-    'online-1v1': {
-        title: 'Online 1v1',
-        description: 'Challenge a friend online!',
-        instructions: [
-            'Share a room code with your friend',
-            'Record your song snippets',
-            'Listen to each other\'s reversed audio',
-            'Make your guesses',
-            'Compare scores at the end!'
-        ],
-        icon: '⚔️'
+        ]
     },
     'online-multiplayer': {
         title: 'Online Multiplayer',
@@ -44,8 +30,7 @@ export const GAME_MODE_INFO: Record<'local' | 'online-1v1' | 'online-multiplayer
             'Audio gets passed around and reversed',
             'Watch the chaos unfold',
             'See how badly the songs get distorted!'
-        ],
-        icon: '🎉'
+        ]
     }
 };
 

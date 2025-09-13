@@ -8,7 +8,7 @@ import { GAME_MODE_INFO, TIMER_OPTIONS } from './constants';
 const { Title, Paragraph } = Typography;
 
 interface GameStartPageProps {
-  gameMode: 'local' | 'online-1v1' | 'online-multiplayer';
+  gameMode: 'local' | 'online-multiplayer';
 }
 
 const GameStartPage: React.FC<GameStartPageProps> = ({ gameMode }) => {
@@ -31,22 +31,26 @@ const GameStartPage: React.FC<GameStartPageProps> = ({ gameMode }) => {
 
   return (
     <PageLayout
-      title={`${gameInfo.icon} ${gameInfo.title}`}
-      subtitle={gameInfo.description}
+      title={gameInfo.title}
       backPath="/"
+      backgroundClass="setup-background"
     >
-      <div className="glass-card p-8 w-full">
+      <div className="glass-card w-full" style={{ padding: '48px' }}>
         <Row gutter={[24, 24]}>
           {/* Left side - How to Play */}
           <Col xs={24} lg={12}>
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
-              <div className="text-center">
-                <Title level={2} style={{ color: '#1e293b', marginBottom: '1rem' }}>
+              <div className="text-center" style={{ marginTop: '1.5rem' }}>
+                <Title level={2} style={{
+                  color: '#4c1d95',
+                  marginBottom: '1rem',
+                  fontWeight: '700',
+                  fontSize: '2.5rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1.5px',
+                }}>
                   How to Play
                 </Title>
-                <Paragraph style={{ color: '#64748b', fontSize: '1.125rem', margin: 0 }}>
-                  Get ready for the musical chaos! Here's how the game works:
-                </Paragraph>
               </div>
 
               <Card
@@ -94,12 +98,16 @@ const GameStartPage: React.FC<GameStartPageProps> = ({ gameMode }) => {
             }}>
               <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 <div className="text-center">
-                  <Title level={3} style={{ color: '#1e40af', marginBottom: '1rem' }}>
-                    🎯 Player Setup
+                  <Title level={3} style={{
+                    color: '#4c1d95',
+                    marginBottom: '1rem',
+                    fontWeight: '700',
+                    fontSize: '2rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1.5px'
+                  }}>
+                    Player Setup
                   </Title>
-                  <Paragraph style={{ color: '#64748b' }}>
-                    Enter player names to start the game!
-                  </Paragraph>
                 </div>
 
                 <Space direction="vertical" size="middle" style={{ width: '100%' }}>
@@ -107,8 +115,8 @@ const GameStartPage: React.FC<GameStartPageProps> = ({ gameMode }) => {
                     <label style={{
                       display: 'block',
                       marginBottom: '8px',
-                      color: '#1e293b',
-                      fontWeight: '500'
+                      color: '#ffffff',
+                      fontWeight: '600'
                     }}>
                       Player 1 Name
                     </label>
@@ -126,8 +134,8 @@ const GameStartPage: React.FC<GameStartPageProps> = ({ gameMode }) => {
                     <label style={{
                       display: 'block',
                       marginBottom: '8px',
-                      color: '#1e293b',
-                      fontWeight: '500'
+                      color: '#ffffff',
+                      fontWeight: '600'
                     }}>
                       Player 2 Name
                     </label>
@@ -145,11 +153,11 @@ const GameStartPage: React.FC<GameStartPageProps> = ({ gameMode }) => {
                     <label style={{
                       display: 'block',
                       marginBottom: '8px',
-                      color: '#1e293b',
-                      fontWeight: '500'
+                      color: '#ffffff',
+                      fontWeight: '600'
                     }}>
-                      <ClockCircleOutlined style={{ marginRight: '8px' }} />
-                      Recording Timer
+                      <ClockCircleOutlined style={{ marginRight: '8px', color: '#ffffff' }} />
+                      Turn Length
                     </label>
                     <Select
                       size="large"

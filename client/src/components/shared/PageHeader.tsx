@@ -12,11 +12,11 @@ interface PageHeaderProps {
   backPath?: string;
 }
 
-const PageHeader: React.FC<PageHeaderProps> = ({ 
-  title, 
-  subtitle, 
-  showBackButton = true, 
-  backPath = '/' 
+const PageHeader: React.FC<PageHeaderProps> = ({
+  title,
+  subtitle,
+  showBackButton = true,
+  backPath = '/'
 }) => {
   const navigate = useNavigate();
 
@@ -25,36 +25,45 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between p-6">
-      <div className="flex items-center gap-4">
-        {showBackButton && (
-          <Button
-            type="text"
-            icon={<ArrowLeftOutlined />}
-            onClick={handleBack}
-            className="custom-button"
-            style={{ 
-              color: '#1e293b',
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              border: '1px solid rgba(255,255,255,0.3)'
-            }}
-          >
-            Back
-          </Button>
+    <div className="relative flex items-center justify-center p-6" style={{ marginTop: '20px' }}>
+      {showBackButton && (
+        <Button
+          type="text"
+          icon={<ArrowLeftOutlined />}
+          onClick={handleBack}
+          className="custom-button"
+          style={{
+            position: 'absolute',
+            left: '24px',
+            color: '#1e293b',
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            border: '1px solid rgba(255,255,255,0.3)'
+          }}
+        >
+          Back
+        </Button>
+      )}
+      <div style={{ textAlign: 'center' }}>
+        <Title level={2} style={{
+          color: '#1e293b',
+          margin: 0,
+          fontWeight: '700',
+          textTransform: 'uppercase',
+          letterSpacing: '1.5px',
+        }}>
+          {title}
+        </Title>
+        {subtitle && (
+          <Typography.Text style={{
+            color: '#1e293b',
+            fontSize: '1.1rem',
+            marginTop: '8px',
+            display: 'block',
+            fontWeight: '600',
+          }}>
+            {subtitle}
+          </Typography.Text>
         )}
-        <div>
-          <Title level={2} style={{ color: '#1e293b', margin: 0 }}>
-            {title}
-          </Title>
-          {subtitle && (
-            <Typography.Text style={{ 
-              color: '#64748b',
-              fontSize: '1rem'
-            }}>
-              {subtitle}
-            </Typography.Text>
-          )}
-        </div>
       </div>
     </div>
   );

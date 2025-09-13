@@ -8,7 +8,6 @@ import ResultsPhase from './phases/ResultsPhase';
 const GameFlow: React.FC = () => {
   const {
     gameState,
-    updateGameState,
     startRecording,
     stopRecording,
     playAudio,
@@ -46,6 +45,7 @@ const GameFlow: React.FC = () => {
             maxTime={maxTime}
             isRecording={gameState.isRecording}
             recordedAudio={gameState.recordedAudio}
+            currentPhase={gameState.currentPhase}
             onStartRecording={startRecording}
             onStopRecording={stopRecording}
             onConfirmRecording={handleConfirmRecording}
@@ -84,11 +84,19 @@ const GameFlow: React.FC = () => {
     }
   };
 
+  const getBackgroundClass = () => {
+    if (gameState.currentPhase === 'results') {
+      return 'results-background';
+    }
+    return 'game-background';
+  };
+
   return (
     <PageLayout
-      title="🎵 Reverse Audio Game"
+      title="Reverse Audio Game"
       subtitle={`${gameState.player1Name} vs ${gameState.player2Name}`}
       backPath="/"
+      backgroundClass={getBackgroundClass()}
     >
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         {renderCurrentPhase()}
