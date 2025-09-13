@@ -1,3 +1,4 @@
 # FastAPI requirements
-fastapi
-uvicorn
+fastapi[standard]
+pydub
+ruff

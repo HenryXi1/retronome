@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 
+from app.routers import all_routers
+
 app = FastAPI()
 
-
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the Reverse Game API!"}
+for router in all_routers:
+    app.include_router(router)

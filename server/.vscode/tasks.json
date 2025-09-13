@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Lint Python with Ruff",
+			"type": "shell",
+			"command": "ruff check .",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [
+				"$ruff"
+			],
+			"group": "test"
+		}
+	]
+}
