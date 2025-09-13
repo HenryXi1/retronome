@@ -1,4 +1,6 @@
 # FastAPI requirements
 fastapi[standard]
 pydub
+python-dotenv
+redis
 ruff
