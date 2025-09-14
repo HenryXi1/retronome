@@ -49,8 +49,8 @@ const GameModeSelector: React.FC = () => {
             description="Play with a friend on the same device. Perfect for couch co-op!"
             icon={<HomeOutlined style={{ fontSize: '2rem', color: 'white' }} />}
             onClick={() => handleModeSelect('local')}
-            color="#E879F9"
-            hoverColor="#D946EF"
+            color="#3b82f6"
+            hoverColor="#1d4ed8"
           />
 
           <GameModeCard
@@ -58,8 +58,8 @@ const GameModeSelector: React.FC = () => {
             description="Up to 8 players! Watch the audio get more chaotic with each round."
             icon={<TeamOutlined style={{ fontSize: '2rem', color: 'white' }} />}
             onClick={() => handleModeSelect('online-multiplayer')}
-            color="#A855F7"
-            hoverColor="#9333EA"
+            color="#6366f1"
+            hoverColor="#4338ca"
           />
         </Space>
       </div>

@@ -2,14 +2,18 @@ export type GamePhase = 'setup' | 'recording' | 'listening' | 'recording-reverse
 export type Player = 'player1' | 'player2';
 
 export interface AudioClip {
-  id: string;
-  player: Player;
+  id?: string;
+  player?: Player;
+  playerId?: string;
+  playerName?: string;
   originalUrl: string;
   reversedUrl?: string;
-  timestamp: Date;
+  timestamp?: Date;
   originalSong?: string;
   guess?: string;
   isCorrect?: boolean;
+  round?: number;
+  isReversed?: boolean;
 }
 
 export interface GameState {

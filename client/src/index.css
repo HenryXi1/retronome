@@ -25,7 +25,7 @@ body {
 .setup-background,
 .game-background,
 .results-background {
-  background: linear-gradient(135deg, #DA4167 0%, #8B5A96 100%);
+  background: linear-gradient(135deg, #4182e3 0%, #9d5aea 100%);
   position: relative;
   overflow: hidden;
 }
