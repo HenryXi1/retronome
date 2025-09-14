@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Button, Space } from 'antd';
 import { AudioOutlined, StopOutlined, CheckOutlined, ReloadOutlined } from '@ant-design/icons';
+import CircularTimer from '../../shared/CircularTimer';
 
 const { Title, Paragraph } = Typography;
 
@@ -13,6 +14,7 @@ interface RecordingPhaseProps {
   isRecording: boolean;
   recordedAudio: Blob | null;
   currentPhase: 'recording' | 'recording-reversed';
+  currentRound?: number;
   isMultiplayer?: boolean;
   onStartRecording: () => void;
   onStopRecording: () => void;
@@ -24,9 +26,12 @@ const RecordingPhase: React.FC<RecordingPhaseProps> = ({
   currentPlayer,
   player1Name,
   player2Name,
+  timeLeft,
+  maxTime,
   isRecording,
   recordedAudio,
   currentPhase,
+  currentRound,
   isMultiplayer = false,
   onStartRecording,
   onStopRecording,
@@ -35,6 +40,7 @@ const RecordingPhase: React.FC<RecordingPhaseProps> = ({
 }) => {
   const currentPlayerName = currentPlayer === 'player1' ? player1Name : player2Name;
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [localTimer, setLocalTimer] = useState(30);
 
   const handleConfirmRecording = () => {
     onConfirmRecording();
@@ -49,6 +55,25 @@ const RecordingPhase: React.FC<RecordingPhaseProps> = ({
       setHasSubmitted(false);
     }
   }, [recordedAudio, currentPhase]);
+
+  // Start local timer when entering recording phase (multiplayer only)
+  // For rounds after the first, use the shared timer instead of local timer
+  useEffect(() => {
+    if (isMultiplayer && (!currentRound || currentRound === 1)) {
+      setLocalTimer(30);
+      const interval = setInterval(() => {
+        setLocalTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [isMultiplayer, currentRound]);
 
   // Determine what UI state to show
   const showSubmittedState = isMultiplayer && hasSubmitted && !recordedAudio;
@@ -95,7 +120,12 @@ const RecordingPhase: React.FC<RecordingPhaseProps> = ({
           right: '15px',
           transform: 'scale(0.7)'
         }}>
-          {/* <CircularTimer timeLeft={timeLeft} maxTime={maxTime} /> */}
+          {isMultiplayer && (
+            <CircularTimer 
+              timeLeft={(!currentRound || currentRound === 1) ? localTimer : timeLeft} 
+              maxTime={(!currentRound || currentRound === 1) ? 30 : maxTime} 
+            />
+          )}
         </div>
 
         {/* Main content */}

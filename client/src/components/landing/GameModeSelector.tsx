@@ -22,18 +22,19 @@ const GameModeSelector: React.FC = () => {
       backgroundClass="landing-background"
     >
       <div className="glass-card max-w-3xl w-full" style={{ padding: '48px' }}>
-        {/* Title and subtitle inside the card */}
+        {/* Logo and subtitle inside the card */}
         <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-          <Title level={1} style={{
-            color: '#1e293b',
-            marginBottom: '1rem',
-            fontSize: '3rem',
-            fontWeight: '700',
-            textTransform: 'uppercase',
-            letterSpacing: '2px',
-          }}>
-            🎵 RETRONOME 🎵
-          </Title>
+          <div>
+            <img 
+              src="/retronome-logo.png" 
+              alt="RETRONOME Logo" 
+              style={{
+                maxWidth: '200px',
+                height: 'auto',
+                filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))'
+              }}
+            />
+          </div>
           <Typography.Text style={{
             color: '#1e293b',
             fontSize: '1.5rem',

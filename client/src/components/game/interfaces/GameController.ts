@@ -5,6 +5,7 @@ export interface GameController {
     // State
     currentPhase: GamePhase;
     currentPlayer: Player;
+    currentRound?: number;
     player1Name?: string;
     player2Name?: string;
     timeLeft: number;

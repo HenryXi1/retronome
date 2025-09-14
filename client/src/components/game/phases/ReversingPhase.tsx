@@ -1,6 +1,7 @@
 import React from 'react';
 import { Typography, Button } from 'antd';
 import { SoundOutlined } from '@ant-design/icons';
+import CircularTimer from '../../shared/CircularTimer';
 
 const { Title, Paragraph } = Typography;
 
@@ -9,6 +10,8 @@ interface ReversingPhaseProps {
   player1Name: string;
   player2Name: string;
   currentReversedUrl: string | null;
+  timeLeft?: number;
+  maxTime?: number;
   isMultiplayer?: boolean;
   onPlayAudio: (url: string) => void;
   onNextPhase: () => void;
@@ -19,6 +22,8 @@ const ReversingPhase: React.FC<ReversingPhaseProps> = ({
   player1Name,
   player2Name,
   currentReversedUrl,
+  timeLeft,
+  maxTime,
   isMultiplayer = false,
   onPlayAudio,
   onNextPhase
@@ -46,6 +51,17 @@ const ReversingPhase: React.FC<ReversingPhaseProps> = ({
         flexDirection: 'column',
         justifyContent: 'center'
       }}>
+        {/* Timer in top right corner - only for multiplayer */}
+        {isMultiplayer && timeLeft !== undefined && maxTime !== undefined && (
+          <div style={{
+            position: 'absolute',
+            top: '15px',
+            right: '15px',
+            transform: 'scale(0.7)'
+          }}>
+            <CircularTimer timeLeft={timeLeft} maxTime={maxTime} />
+          </div>
+        )}
         {/* Main content */}
         <div style={{
           display: 'flex',

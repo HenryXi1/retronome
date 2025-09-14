@@ -54,7 +54,7 @@ const CircularTimer: React.FC<CircularTimerProps> = ({
                 fontWeight: 'bold',
                 color: timeLeft <= 10 ? '#ef4444' : '#1e293b'
             }}>
-                {timeLeft}s
+                {timeLeft}
             </div>
         </div>
     );

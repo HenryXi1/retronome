@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, List, Button, Typography, Space, Avatar, message } from 'antd';
+import { Card, List, Button, Typography, Space, Avatar, message, Select } from 'antd';
 import { UserOutlined, CrownOutlined, CopyOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import PageLayout from '../shared/PageLayout';
@@ -32,6 +32,7 @@ const MultiplayerLobby: React.FC = () => {
   const [roomData, setRoomData] = useState<any>(lobbyState?.roomData || null);
   const [currentPlayerName] = useState(lobbyState?.playerName || '');
   const [currentPlayerId] = useState(lobbyState?.playerId || '');
+  const [maxPlayers, setMaxPlayers] = useState(5);
 
   // If no initial data, redirect to setup
   if (!lobbyState?.roomCode || !lobbyState?.playerName) {
@@ -104,6 +105,16 @@ const MultiplayerLobby: React.FC = () => {
     navigate('/online-multiplayer/start');
   };
 
+  const handleMaxPlayersChange = (value: number) => {
+    setMaxPlayers(value);
+  };
+
+  // Generate options for max players dropdown
+  const maxPlayerOptions = Array.from({ length: 9 }, (_, i) => i + 2).map(num => ({
+    value: num,
+    label: `${num} players`
+  }));
+
   // Generate players list from room data
   const players: Player[] = roomData && roomData.player_ids && roomData.player_names ? 
     roomData.player_ids.map((id: string) => ({
@@ -114,8 +125,7 @@ const MultiplayerLobby: React.FC = () => {
     })) : 
     [{ id: currentPlayerId, name: currentPlayerName, isHost: lobbyState.isHost, isEmpty: false }];
 
-  // Fill empty slots up to 5 players
-  const maxPlayers = 5;
+  // Fill empty slots up to maxPlayers
   while (players.length < maxPlayers) {
     players.push({
       id: `empty-${players.length}`,
@@ -182,49 +192,67 @@ const MultiplayerLobby: React.FC = () => {
 
         <Card
           title={
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography.Title level={3} style={{ color: '#4c1d95', margin: 0 }}>
                 Players in Room ({players.filter((p: Player) => !p.isEmpty).length}/{maxPlayers})
               </Typography.Title>
+              {isHost && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Typography.Text style={{ color: '#4c1d95', fontSize: '14px', fontWeight: '500' }}>
+                    Max:
+                  </Typography.Text>
+                  <Select
+                    value={maxPlayers}
+                    onChange={handleMaxPlayersChange}
+                    options={maxPlayerOptions}
+                    style={{ width: '100px' }}
+                    size="small"
+                  />
+                </div>
+              )}
             </div>
           }
           style={{
             background: 'rgba(255, 255, 255, 0.9)',
             border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '16px'
+            borderRadius: '16px',
+            minHeight: '350px'
           }}
+          bodyStyle={{ height: '300px', padding: 0 }}
         >
-          <List
-            dataSource={players}
-            renderItem={(player: Player) => (
-              <List.Item>
-                <List.Item.Meta
-                  avatar={
-                    <Avatar 
-                      icon={<UserOutlined />} 
-                      style={{ 
-                        backgroundColor: player.isEmpty ? '#d1d5db' : '#6366f1',
-                        opacity: player.isEmpty ? 0.5 : 1
-                      }} 
-                    />
-                  }
-                  title={
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ 
-                        color: player.isEmpty ? '#9ca3af' : '#1e293b',
-                        fontWeight: player.isEmpty ? 'normal' : 'bold'
-                      }}>
-                        {player.name}
-                      </span>
-                      {player.isHost && (
-                        <CrownOutlined style={{ color: '#f59e0b' }} />
-                      )}
-                    </div>
-                  }
-                />
-              </List.Item>
-            )}
-          />
+          <div style={{ height: '300px', overflowY: 'auto', paddingRight: '8px', padding: '16px' }}>
+            <List
+              dataSource={players}
+              renderItem={(player: Player) => (
+                <List.Item>
+                  <List.Item.Meta
+                    avatar={
+                      <Avatar 
+                        icon={<UserOutlined />} 
+                        style={{ 
+                          backgroundColor: player.isEmpty ? '#d1d5db' : '#6366f1',
+                          opacity: player.isEmpty ? 0.5 : 1
+                        }} 
+                      />
+                    }
+                    title={
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ 
+                          color: player.isEmpty ? '#9ca3af' : '#1e293b',
+                          fontWeight: player.isEmpty ? 'normal' : 'bold'
+                        }}>
+                          {player.name}
+                        </span>
+                        {player.isHost && (
+                          <CrownOutlined style={{ color: '#f59e0b' }} />
+                        )}
+                      </div>
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+          </div>
         </Card>
 
         <Space direction="vertical" size="large" style={{ width: '100%', marginTop: '32px' }}>

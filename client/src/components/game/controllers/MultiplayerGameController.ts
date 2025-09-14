@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { GameController } from '../interfaces';
 import { useRecording } from '../hooks';
 import { useWebSocket } from '../../../contexts/WebSocketContext';
@@ -14,8 +14,41 @@ export const useMultiplayerGameController = (): GameController => {
     const [gameSummaryFiles, setGameSummaryFiles] = useState<any[][][]>([]);
     const [roundInProgress, setRoundInProgress] = useState(true);
     const [currentReversedAudioUrl, setCurrentReversedAudioUrl] = useState<string | null>(null);
+    
+    // Continuous timer for rounds after the first
+    const [continuousTimeLeft, setContinuousTimeLeft] = useState(recordingTimer);
+    const continuousTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const recording = useRecording();
+
+    // Continuous timer effect for rounds after the first
+    useEffect(() => {
+        if (currentRound > 1) {
+            // Start continuous timer for rounds after the first
+            continuousTimerRef.current = setInterval(() => {
+                setContinuousTimeLeft(prev => {
+                    if (prev <= 1) {
+                        clearInterval(continuousTimerRef.current!);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            return () => {
+                if (continuousTimerRef.current) {
+                    clearInterval(continuousTimerRef.current);
+                }
+            };
+        }
+    }, [currentRound]);
+
+    // Reset continuous timer when starting a new round
+    useEffect(() => {
+        if (currentRound > 1) {
+            setContinuousTimeLeft(recordingTimer);
+        }
+    }, [currentRound, recordingTimer]);
 
     // Helper function to convert base64 to playable audio URL
     const createAudioUrlFromBase64 = (base64Data: string) => {
@@ -180,7 +213,8 @@ export const useMultiplayerGameController = (): GameController => {
         // State
         currentPhase,
         currentPlayer: 'player1', // All players are active in sync model
-        timeLeft: recording.timeLeft,
+        currentRound,
+        timeLeft: currentRound > 1 ? continuousTimeLeft : recording.timeLeft,
         maxTime: recordingTimer,
         isRecording: recording.isRecording,
         recordedAudio: recording.recordedAudio,

@@ -25,7 +25,7 @@ from models.room import RoomModel
 
 from .redis_manager import RedisManager
 
-ROUND_DURATION = 10  # seconds
+ROUND_DURATION = 30  # seconds
 
 
 class GameController:

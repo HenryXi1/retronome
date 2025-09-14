@@ -2,8 +2,8 @@
 
 ## Inspiration
 
-As two students from Vancouver who study far from home in Waterloo, we’re always searching for creative ways to stay connected with the people we care about. We noticed a TikTok trend where couples would record short clips, then reverse them, and attempt to mimic the reversed playback. The results were hilarious — but the experience was limited to local play and not built for online social settings.  
-nh
+As two students from Vancouver who study far from home in Waterloo, we’re always searching for creative ways to stay connected with the people we care about. We noticed a TikTok trend where couples would record short clips, then reverse them, and attempt to mimic the reversed playback. The results were hilarious — but the experience was limited to local play and not built for online social settings.
+
 That sparked an idea: what if we could take this quirky concept and give it the **multiplayer, party-game treatment**, similar to popular games like Skribbl or Gartic Phone? We wanted to create something that lets anyone — friends, family, or even complete strangers — connect over shared laughter, music, and the universal challenge of trying to make sense of backwards audio.
 
 And so, **Retronome** was born. It is our attempt to transform a viral local challenge into a polished, real-time multiplayer game that can bridge distance and create moments of pure comedy.
