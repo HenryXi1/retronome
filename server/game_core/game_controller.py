@@ -1,12 +1,8 @@
-import secrets
-import string
+import asyncio
 from uuid import uuid4
 
 from fastapi import WebSocket
 from pydantic import BaseModel, ValidationError
-from redis import Redis
-
-from clients.redis_client import get_redis_client
 
 from .models.game_models import RoomModel
 from .models.request_schemas import (
@@ -19,18 +15,20 @@ from .models.response_schemas import (
     ResponseType,
     RoomCreatedResponse,
     RoomJoinedResponse,
+    RoomUpdatedNotification,
 )
+from .redis_manager import RedisManager
 
 
 class GameController:
     websocket: WebSocket
-    redis_client: Redis
+    redis_manager: RedisManager
     _room: RoomModel | None
     player_id: str
 
-    def __init__(self, websocket: WebSocket, redis_client=None):
+    def __init__(self, websocket: WebSocket):
         self.websocket = websocket
-        self.redis_client = redis_client or get_redis_client()
+        self.redis_manager = RedisManager()
         self.player_id = str(uuid4())
         self._room = None
 
@@ -79,49 +77,42 @@ class GameController:
         validated_request = schema(**req)
         return validated_request
 
-    def create_room(self, host_player_name: str):
-        # Generate four letter room code
-        letters = string.ascii_uppercase
-        random_code = ''.join(secrets.choice(letters) for _ in range(4))
-
-        # Check if room code already exists in Redis
-        while self.redis_client.exists(f'room:{random_code}'):
-            random_code = ''.join(secrets.choice(letters) for _ in range(4))
-
-        self.room = RoomModel(
-            code=random_code,
-            players={self.player_id: host_player_name},
-            host_id=self.player_id,
-        )
-        self.redis_client.set(
-            f'room:{self.room.code}',
-            self.room.model_dump_json(),
+    async def create_room(self, host_player_name: str):
+        room = await self.redis_manager.create_room(self.player_id, host_player_name)
+        self.room = room
+        asyncio.create_task(
+            self.redis_manager.subscribe_to_room_events(room.code, self.on_room_update)
         )
 
     async def join_room(self, room_code: str, player_name: str) -> bool:
-        room_data = await self.redis_client.get(f'room:{room_code}')
-        if not room_data:
+        room = await self.redis_manager.add_player_to_room(
+            room_code, self.player_id, player_name
+        )
+        if not room:
             return False
-
-        room_json = room_data.decode('utf-8')
-        try:
-            room_dict = RoomModel.model_validate_json(room_json)
-        except ValidationError:
-            return False
-        room_dict.players[self.player_id] = player_name
-        self.room = room_dict
-        self.redis_client.set(
-            f'room:{self.room.code}',
-            self.room.model_dump_json(),
+        self.room = room
+        asyncio.create_task(
+            self.redis_manager.subscribe_to_room_events(room.code, self.on_room_update)
         )
         return True
+
+    async def on_room_update(self, room: RoomModel | None) -> None:
+        if room is None:
+            # TODO: Handle room deletion
+            return
+        self.room = room
+        await self.send_json(
+            RoomUpdatedNotification(
+                room=self.room,
+            )
+        )
 
     async def run(self):
         while self._room is None:
             req_message = await self.receive_message()
 
             if req_message.type == RequestType.CREATE_ROOM:
-                self.create_room(req_message.player_name)
+                await self.create_room(req_message.player_name)
                 await self.send_json(
                     RoomCreatedResponse(
                         room=self.room,
@@ -129,7 +120,7 @@ class GameController:
                 )
 
             elif req_message.type == RequestType.JOIN_ROOM:
-                success = self.join_room(
+                success = await self.join_room(
                     req_message.room_id,
                     req_message.player_name,
                 )
@@ -152,3 +143,6 @@ class GameController:
                         error='No room joined yet',
                     )
                 )
+        while True:
+            # Keep the connection alive
+            await asyncio.sleep(10)

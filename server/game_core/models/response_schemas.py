@@ -9,7 +9,7 @@ from .game_models import RoomModel
 class ResponseType(str, Enum):
     ROOM_CREATED = 'room_created'
     ROOM_JOINED = 'room_joined'
-    ROOM_UPDATE = 'room_update'
+    ROOM_UPDATED = 'room_updated'
     GAME_STARTED = 'game_started'
     ERROR = 'error'
 
@@ -24,8 +24,8 @@ class RoomJoinedResponse(BaseModel):
     room: RoomModel
 
 
-class RoomUpdateResponse(BaseModel):
-    type: Literal[ResponseType.ROOM_UPDATE] = ResponseType.ROOM_UPDATE
+class RoomUpdatedNotification(BaseModel):
+    type: Literal[ResponseType.ROOM_UPDATED] = ResponseType.ROOM_UPDATED
     room: RoomModel
 
 
@@ -41,7 +41,7 @@ class ErrorResponse(BaseModel):
 ResponseMessage = Union[
     RoomCreatedResponse,
     RoomJoinedResponse,
-    RoomUpdateResponse,
+    RoomUpdatedNotification,
     GameStartedResponse,
     ErrorResponse,
 ]
