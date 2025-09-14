@@ -1,102 +1,148 @@
 import React, { useState } from 'react';
 import { Card, Typography, Button, Space, Tabs, Avatar, Divider } from 'antd';
 import { SoundOutlined, HomeOutlined, UserOutlined, TrophyOutlined } from '@ant-design/icons';
-import { AudioClip } from '../interfaces';
 
 const { Title, Text } = Typography;
 
 interface MultiplayerResultsPhaseProps {
-  audioClips: AudioClip[];
-  players: { id: string, name: string }[];
+  gameSummaryFiles: any[][][];
+  playerNames?: Record<string, string>;
   onPlayAudio: (url: string) => void;
   onBackToHome: () => void;
 }
 
 const MultiplayerResultsPhase: React.FC<MultiplayerResultsPhaseProps> = ({
-  audioClips,
-  players,
+  gameSummaryFiles,
+  playerNames = {},
   onPlayAudio,
   onBackToHome
 }) => {
-  const [selectedPlayer, setSelectedPlayer] = useState(players[0]?.id || '');
 
-  // Group audio clips by player
-  const clipsByPlayer = audioClips.reduce((acc, clip) => {
-    const playerId = clip.playerId || 'unknown';
-    if (!acc[playerId]) acc[playerId] = [];
-    acc[playerId].push(clip);
-    return acc;
-  }, {} as Record<string, AudioClip[]>);
+  // Extract original creators from gameSummaryFiles
+  // Each outer array element is a different starting player's progression
+  const originalCreators = gameSummaryFiles.map((playerProgression, index) => {
+    const firstEntry = playerProgression[0];
+    if (firstEntry) {
+      const [playerId] = firstEntry;
+      return {
+        id: playerId,
+        name: playerNames[playerId] || `Player ${playerId.slice(0, 8)}`,
+        progressionIndex: index
+      };
+    }
+    return null;
+  }).filter((creator): creator is { id: string, name: string, progressionIndex: number } => creator !== null);
 
-  // Sort clips by round for each player
-  Object.keys(clipsByPlayer).forEach(playerId => {
-    clipsByPlayer[playerId].sort((a, b) => (a.round || 1) - (b.round || 1));
-  });
+  console.log('originalCreators', originalCreators);
 
-  // Get all rounds for statistics
-  const allRounds = [...new Set(audioClips.map(clip => clip.round || 1))].sort((a, b) => a - b);
 
-  const renderPlayerRounds = (playerId: string) => {
-    const playerClips = clipsByPlayer[playerId] || [];
-    
-    if (playerClips.length === 0) {
+  const [selectedCreator, setSelectedCreator] = useState(originalCreators[0]?.id || '');
+
+
+  const renderClipProgression = (originalCreatorId: string) => {
+    // Find the creator's progression
+    const creatorInfo = originalCreators.find(c => c.id === originalCreatorId);
+    if (!creatorInfo) {
       return (
         <div style={{ textAlign: 'center', padding: '40px' }}>
           <Text style={{ color: '#6b7280', fontSize: '16px' }}>
-            No recordings found for this player.
+            Creator not found.
+          </Text>
+        </div>
+      );
+    }
+
+    // Just go through their progression in order
+    const playerProgression = gameSummaryFiles[creatorInfo.progressionIndex];
+    const clipProgression = playerProgression.map((entry, roundIndex) => {
+      const [playerId, originalFile, reversedFile] = entry;
+      return {
+        round: roundIndex + 1,
+        originalFile,
+        reversedFile,
+        playerId,
+        isOriginalCreator: roundIndex === 0
+      };
+    });
+    
+    if (clipProgression.length === 0) {
+      return (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Text style={{ color: '#6b7280', fontSize: '16px' }}>
+            No progression found for this creator's clip.
           </Text>
         </div>
       );
     }
 
     return (
-      <div style={{ padding: '16px 0' }}>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          {playerClips.map((clip, index) => (
+      <div style={{ padding: '12px 0' }}>
+        <Space direction="vertical" size={20} style={{ width: '100%' }}>
+          {clipProgression.map((entry, index) => (
             <Card
               key={index}
+              size="small"
               style={{
-                background: 'rgba(255, 255, 255, 0.9)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                borderRadius: '16px'
+                background: entry.isOriginalCreator 
+                  ? 'rgba(139, 92, 246, 0.1)' 
+                  : 'rgba(255, 255, 255, 0.95)',
+                border: entry.isOriginalCreator 
+                  ? '2px solid rgba(139, 92, 246, 0.4)' 
+                  : '1px solid rgba(229, 231, 235, 0.6)',
+                borderRadius: '12px',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
               }}
             >
               <div style={{ marginBottom: '16px' }}>
-                <Text strong style={{ fontSize: '18px', color: '#1e293b' }}>
-                  Round {clip.round || 1}
+                <Text strong style={{ fontSize: '18px', color: '#1f2937', fontWeight: '600' }}>
+                  Round {entry.round}
+                  {entry.isOriginalCreator && (
+                    <Text style={{ color: '#7c3aed', marginLeft: '8px', fontSize: '16px', fontWeight: '600' }}>
+                      (Original Creator)
+                    </Text>
+                  )}
+                  {!entry.isOriginalCreator && (
+                    <Text style={{ color: '#6b7280', marginLeft: '8px', fontSize: '14px' }}>
+                      by {playerNames[entry.playerId] || `Player ${entry.playerId.slice(0, 8)}`}
+                    </Text>
+                  )}
                 </Text>
               </div>
               
-              <Space size={16}>
-                {clip.originalUrl && (
+              <Space size={12}>
+                {entry.originalFile && (
                   <Button
-                    onClick={() => onPlayAudio(clip.originalUrl)}
+                    onClick={() => entry.originalFile && onPlayAudio(entry.originalFile)}
                     icon={<SoundOutlined />}
+                    size="middle"
                     style={{
                       background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
                       border: 'none',
                       color: 'white',
-                      borderRadius: '12px',
-                      height: '48px',
-                      padding: '0 24px',
-                      fontSize: '16px'
+                      borderRadius: '10px',
+                      height: '40px',
+                      padding: '0 20px',
+                      fontSize: '15px',
+                      fontWeight: '500'
                     }}
                   >
                     🎵 Original
                   </Button>
                 )}
-                {clip.reversedUrl && (
+                {entry.reversedFile && (
                   <Button
-                    onClick={() => onPlayAudio(clip.reversedUrl!)}
+                    onClick={() => entry.reversedFile && onPlayAudio(entry.reversedFile)}
                     icon={<SoundOutlined />}
+                    size="middle"
                     style={{
                       background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                       border: 'none',
                       color: 'white',
-                      borderRadius: '12px',
-                      height: '48px',
-                      padding: '0 24px',
-                      fontSize: '16px'
+                      borderRadius: '10px',
+                      height: '40px',
+                      padding: '0 20px',
+                      fontSize: '15px',
+                      fontWeight: '500'
                     }}
                   >
                     🔄 Reversed
@@ -110,32 +156,37 @@ const MultiplayerResultsPhase: React.FC<MultiplayerResultsPhaseProps> = ({
     );
   };
 
-  const renderPlayerTabs = () => {
-    const tabItems = players.map(player => ({
-      key: player.id,
+  const renderCreatorTabs = () => {
+    const tabItems = originalCreators.map(creator => ({
+      key: creator.id,
       label: (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Avatar 
             size="small"
             icon={<UserOutlined />} 
             style={{ 
-              backgroundColor: clipsByPlayer[player.id]?.length > 0 ? '#6366f1' : '#d1d5db'
+              backgroundColor: '#8b5cf6'
             }} 
           />
-          {player.name}
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>{creator.name}</div>
+            <div style={{ fontSize: '12px', color: '#374151', fontWeight: '600' }}>
+              Progression {creator.progressionIndex + 1}
+            </div>
+          </div>
         </div>
       ),
       children: (
-        <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
-          {renderPlayerRounds(player.id)}
+        <div style={{ maxHeight: '450px', overflowY: 'auto', paddingRight: '8px' }}>
+          {renderClipProgression(creator.id)}
         </div>
       )
     }));
 
     return (
       <Tabs
-        activeKey={selectedPlayer}
-        onChange={(key) => setSelectedPlayer(key)}
+        activeKey={selectedCreator}
+        onChange={(key) => setSelectedCreator(key)}
         items={tabItems}
         centered
       />
@@ -143,17 +194,17 @@ const MultiplayerResultsPhase: React.FC<MultiplayerResultsPhaseProps> = ({
   };
 
   return (
-    <Card className="glass-card" style={{ maxWidth: '900px', margin: '0 auto' }}>
-      <div className="text-center mb-6">
-        <Title level={2} style={{ color: '#1e293b', marginBottom: '0.5rem' }}>
+    <Card className="glass-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <div className="text-center mb-5">
+        <Title level={2} style={{ color: '#1f2937', marginBottom: '0.5rem', fontWeight: '600' }}>
           <TrophyOutlined style={{ marginRight: '8px', color: '#f59e0b' }} />
           Game Results
         </Title>
       </div>
 
-      {players.length > 0 ? (
+      {originalCreators.length > 0 ? (
         <>
-          {renderPlayerTabs()}
+          {renderCreatorTabs()}
           
           <Divider />
         </>
@@ -169,16 +220,17 @@ const MultiplayerResultsPhase: React.FC<MultiplayerResultsPhaseProps> = ({
       <div className="text-center">
         <Button
           onClick={onBackToHome}
-          size="large"
+          size="middle"
           icon={<HomeOutlined />}
           style={{
             background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
             border: 'none',
             color: 'white',
-            height: '56px',
-            fontSize: '18px',
-            padding: '0 32px',
-            borderRadius: '16px'
+            height: '44px',
+            fontSize: '16px',
+            padding: '0 24px',
+            borderRadius: '12px',
+            fontWeight: '500'
           }}
         >
           Back to Lobby

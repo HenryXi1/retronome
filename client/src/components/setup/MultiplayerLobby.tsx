@@ -55,13 +55,13 @@ const MultiplayerLobby: React.FC = () => {
         localStorage.setItem('playerName', currentPlayerName);
         localStorage.setItem('roomCode', roomCode);
         
+        console.log('roomData', roomData);
         // Pass game data via navigation state to avoid race condition
-     
-        
         navigate('/online-multiplayer', {
           state: {
             gameStarted: true,
             room: response.room,
+            player_names: roomData.player_names || {},
           }
         });
       } else if (response.type === 'error') {
@@ -73,7 +73,7 @@ const MultiplayerLobby: React.FC = () => {
 
     const cleanup = addMessageHandler(handleMessage);
     return cleanup;
-  }, [addMessageHandler, currentPlayerName, navigate]);
+  }, [addMessageHandler, currentPlayerName, navigate, roomData]);
 
   const copyRoomCode = async () => {
     try {

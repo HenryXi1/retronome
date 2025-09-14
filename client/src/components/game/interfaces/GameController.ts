@@ -14,6 +14,8 @@ export interface GameController {
     currentAudioUrl: string | null;
     currentReversedUrl: string | null;
     audioClips: AudioClip[];
+    gameSummaryFiles?: any[][][];
+    playerNames?: Record<string, string>;
 
     // Recording actions
     startRecording: () => void;

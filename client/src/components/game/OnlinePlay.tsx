@@ -6,7 +6,7 @@ import { useMultiplayerGameController } from './controllers/MultiplayerGameContr
 interface GameState {
   gameStarted: boolean;
   room: any;
-  players: Record<string, string>;
+  player_names: Record<string, string>;
 }
 
 const OnlinePlay: React.FC = () => {
@@ -21,6 +21,10 @@ const OnlinePlay: React.FC = () => {
   const [playerName] = useState(localStorage.getItem('playerName') || '');
   const [playerId] = useState(localStorage.getItem('playerId') || '');
   const [gameReady, setGameReady] = useState(false);
+  
+  // Extract player names from navigation state
+  const playerNames = gameState?.player_names || {};
+  console.log('playerNames', playerNames);
 
   // Check for required data and redirect if missing
   const hasRequiredData = roomCode && playerName && playerId;
@@ -71,6 +75,7 @@ const OnlinePlay: React.FC = () => {
     <GenericGameFlow 
       controller={controller} 
       isMultiplayer={true}
+      playerNames={playerNames}
     />
   );
 };

@@ -9,10 +9,10 @@ import { GameController } from './interfaces';
 interface GenericGameFlowProps {
     controller: GameController;
     isMultiplayer?: boolean;
-    players?: { id: string, name: string }[];
+    playerNames?: Record<string, string>;
 }
 
-const GenericGameFlow: React.FC<GenericGameFlowProps> = ({ controller, isMultiplayer = false, players = [] }) => {
+const GenericGameFlow: React.FC<GenericGameFlowProps> = ({ controller, isMultiplayer = false, playerNames = {} }) => {
     const renderCurrentPhase = () => {
         switch (controller.currentPhase) {
             case 'recording':
@@ -42,6 +42,7 @@ const GenericGameFlow: React.FC<GenericGameFlowProps> = ({ controller, isMultipl
                         player1Name={controller.player1Name || 'Player 1'}
                         player2Name={controller.player2Name || 'Player 2'}
                         currentReversedUrl={controller.currentReversedUrl}
+                        isMultiplayer={isMultiplayer}
                         onPlayAudio={controller.playAudio}
                         onNextPhase={controller.nextPhase}
                     />
@@ -50,8 +51,8 @@ const GenericGameFlow: React.FC<GenericGameFlowProps> = ({ controller, isMultipl
             case 'results':
                 return isMultiplayer ? (
                     <MultiplayerResultsPhase
-                        audioClips={controller.audioClips}
-                        players={players}
+                        gameSummaryFiles={controller.gameSummaryFiles || []}
+                        playerNames={playerNames}
                         onPlayAudio={controller.playAudio}
                         onBackToHome={controller.backToHome}
                     />

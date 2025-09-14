@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { GameController, AudioClip } from '../interfaces';
+import { GameController } from '../interfaces';
 import { useRecording } from '../hooks';
 import { useWebSocket } from '../../../contexts/WebSocketContext';
 
@@ -11,7 +11,7 @@ export const useMultiplayerGameController = (): GameController => {
     // Server-synchronized state
     const [currentRound, setCurrentRound] = useState(1);
     const [currentPhase, setCurrentPhase] = useState<GameController['currentPhase']>('recording');
-    const [audioClips, setAudioClips] = useState<AudioClip[]>([]);
+    const [gameSummaryFiles, setGameSummaryFiles] = useState<any[][][]>([]);
     const [roundInProgress, setRoundInProgress] = useState(true);
     const [currentReversedAudioUrl, setCurrentReversedAudioUrl] = useState<string | null>(null);
 
@@ -34,6 +34,17 @@ export const useMultiplayerGameController = (): GameController => {
             console.error('Error creating audio URL from base64:', error);
             return null;
         }
+    };
+
+    // Helper function to process game summary files and convert base64 to URLs
+    const processGameSummaryFiles = (files: any[][]) => {
+        return files.map(playerRounds => 
+            playerRounds.map(([playerId, originalFile, reversedFile]) => [
+                playerId,
+                originalFile ? createAudioUrlFromBase64(originalFile) : null,
+                reversedFile ? createAudioUrlFromBase64(reversedFile) : null
+            ])
+        );
     };
 
     // WebSocket message handlers
@@ -73,7 +84,11 @@ export const useMultiplayerGameController = (): GameController => {
                     
                 case 'game_summary':
                     setCurrentPhase('results');
-                    setAudioClips(response.audio_clips || []);
+                    // Process the 2D array and convert base64 to URLs
+                    console.log('🎮 Received game summary files:', response.files);
+                    const processedFiles = processGameSummaryFiles(response.files || []);
+                    console.log('🎮 Processed files with URLs:', processedFiles);
+                    setGameSummaryFiles(processedFiles);
                     setRoundInProgress(false);
                     break;
                     
@@ -171,7 +186,8 @@ export const useMultiplayerGameController = (): GameController => {
         recordedAudio: recording.recordedAudio,
         currentAudioUrl: recording.currentAudioUrl,
         currentReversedUrl: currentReversedAudioUrl,
-        audioClips,
+        audioClips: [], // Empty for multiplayer - using gameSummaryFiles instead
+        gameSummaryFiles,
 
         // Actions
         startRecording: () => recording.startRecording(recordingTimer),

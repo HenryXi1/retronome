@@ -9,6 +9,7 @@ interface ReversingPhaseProps {
   player1Name: string;
   player2Name: string;
   currentReversedUrl: string | null;
+  isMultiplayer?: boolean;
   onPlayAudio: (url: string) => void;
   onNextPhase: () => void;
 }
@@ -18,6 +19,7 @@ const ReversingPhase: React.FC<ReversingPhaseProps> = ({
   player1Name,
   player2Name,
   currentReversedUrl,
+  isMultiplayer = false,
   onPlayAudio,
   onNextPhase
 }) => {
@@ -74,7 +76,10 @@ const ReversingPhase: React.FC<ReversingPhaseProps> = ({
             fontSize: '1rem',
             marginBottom: '8px'
           }}>
-            {listeningPlayerName}, listen carefully to {recordingPlayerName}'s reversed recording!
+            {isMultiplayer 
+              ? "Listen carefully to the reversed recording!" 
+              : `${listeningPlayerName}, listen carefully to ${recordingPlayerName}'s reversed recording!`
+            }
           </Paragraph>
 
           {/* Play reversed audio button */}

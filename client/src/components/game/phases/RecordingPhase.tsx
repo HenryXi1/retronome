@@ -191,7 +191,7 @@ const RecordingPhase: React.FC<RecordingPhaseProps> = ({
                 fontSize: '1rem',
                 marginBottom: '8px'
               }}>
-                {currentPlayerName}'s turn to sing!
+                {isMultiplayer ? "Your turn to sing!" : `${currentPlayerName}'s turn to sing!`}
               </Paragraph>
 
               {/* Button(s) */}

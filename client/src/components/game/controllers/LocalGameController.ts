@@ -97,6 +97,7 @@ export const useLocalGameController = (): GameController => {
         currentAudioUrl: recording.currentAudioUrl,
         currentReversedUrl,
         audioClips,
+        gameSummaryFiles: [],
 
         // Actions
         startRecording: () => recording.startRecording(recordingTimer),
