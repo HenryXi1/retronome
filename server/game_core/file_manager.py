@@ -23,7 +23,7 @@ class FileManager:
 
     async def get_round_file(
         self, room_code: str, round_number: int, player_id: str
-    ) -> Optional[bytes]:
+    ) -> Optional[str]:
         file_info = self.redis_client.hget(
             f'game:{room_code}:round:{round_number}', player_id
         )
@@ -39,7 +39,8 @@ class FileManager:
         reversed_file = file_paths['reversed']
 
         with open(reversed_file, 'rb') as f:
-            return f.read()
+            file_data = f.read()
+            return base64.b64encode(file_data).decode('utf-8')
 
     async def save_round_file(
         self, room_code: str, round_number: int, player_id: str, base64_data: str
@@ -69,7 +70,7 @@ class FileManager:
 
     async def get_all_files(
         self, room: RoomModel
-    ) -> list[list[tuple[PlayerId, bytes, bytes]]]:
+    ) -> list[list[tuple[PlayerId, str, str]]]:
         player_idxs = {pid: idx for idx, pid in enumerate(room.player_ids)}
         keys = await self.redis_client.keys(f'game:{room.code}:round:*')
         print(f'Found keys: {keys}')

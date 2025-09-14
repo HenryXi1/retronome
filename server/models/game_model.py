@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from .types import PlayerId, PlayerName, RoomId
+from .types import RoomId
 
 
 class GameModel(BaseModel):

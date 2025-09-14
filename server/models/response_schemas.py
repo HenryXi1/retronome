@@ -45,7 +45,7 @@ class GameStartedResponse(BaseModel):
 class GameRoundNotification(BaseModel):
     type: Literal[ResponseType.GAME_ROUND] = ResponseType.GAME_ROUND
     round_number: int
-    audio: bytes | None
+    audio: str | None  # base64-encoded bytes
 
 
 class GameSummaryNotification(BaseModel):
@@ -53,7 +53,7 @@ class GameSummaryNotification(BaseModel):
 
     # 2d array of (player_id, original_file, reversed_file),
     # outer array is by starting player, inner array is by round
-    files: list[list[tuple[PlayerId, bytes, bytes]]]
+    files: list[list[tuple[PlayerId, str, str]]]
 
 
 class ErrorResponse(BaseModel):
