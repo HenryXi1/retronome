@@ -4,9 +4,10 @@ from collections.abc import Awaitable
 from typing import Optional
 
 from clients.redis_client import get_redis_client
-from game_core import reverse_audio
 from models.room_model import RoomModel
 from models.types import PlayerId
+
+from .reverse_audio import reverse_audio
 
 
 class FileManager:

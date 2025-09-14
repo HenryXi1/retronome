@@ -210,53 +210,52 @@ class GameController:
                 self.room.code, self.on_game_update
             )
         )
-        # Wait for either game start or room leave
-        while self._game is None:
+
+        while True:
             req_message = await self.receive_message()
 
-            if req_message.type == RequestType.START_GAME:
-                if self.player_id != self.room.host_id:
+            if self._game is None:
+                if req_message.type == RequestType.START_GAME:
+                    if self.player_id != self.room.host_id:
+                        await self.send_json(
+                            ErrorResponse(
+                                error='Only the host can start the game.',
+                            )
+                        )
+                        continue
+                    if len(self.room.player_ids) < 2:
+                        await self.send_json(
+                            ErrorResponse(
+                                error='At least 2 players are required to start the game.',
+                            )
+                        )
+                        continue
+                    await self.redis_manager.start_game(self.room.code)
+                    asyncio.create_task(self.start_round_timer())
+                elif req_message.type == RequestType.LEAVE_ROOM:
+                    await self.leave_room()
+                    await self.send_json(RoomLeftResponse())
+                    # Restart
+                    return await self.run()
+                else:
                     await self.send_json(
                         ErrorResponse(
-                            error='Only the host can start the game.',
+                            error='Invalid action.',
                         )
                     )
-                    continue
-                if len(self.room.player_ids) < 2:
+
+            else:
+                if req_message.type == RequestType.UPLOAD_FILE:
+                    print(f'Received file upload for round {req_message.round_number}')
+                    await self.file_manager.save_round_file(
+                        self.room.code,
+                        req_message.round_number,
+                        self.player_id,
+                        req_message.file_data,
+                    )
+                else:
                     await self.send_json(
                         ErrorResponse(
-                            error='At least 2 players are required to start the game.',
+                            error='Invalid action.',
                         )
                     )
-                    continue
-                await self.redis_manager.start_game(self.room.code)
-                asyncio.create_task(self.start_round_timer())
-            elif req_message.type == RequestType.LEAVE_ROOM:
-                await self.leave_room()
-                await self.send_json(RoomLeftResponse())
-                # Restart
-                return await self.run()
-            else:
-                await self.send_json(
-                    ErrorResponse(
-                        error='Invalid action.',
-                    )
-                )
-
-        # Main game loop
-        while self._game is not None:
-            req_message = await self.receive_message()
-
-            if req_message.type == RequestType.UPLOAD_FILE:
-                await self.file_manager.save_round_file(
-                    self.room.code,
-                    req_message.round_number,
-                    self.player_id,
-                    req_message.file_data,
-                )
-            else:
-                await self.send_json(
-                    ErrorResponse(
-                        error='Invalid action.',
-                    )
-                )

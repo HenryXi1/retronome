@@ -19,6 +19,7 @@ html = """
         <button onclick=\"sendCreate()\">Create Room</button>
         <button onclick=\"sendJoin()\">Join Room</button>
         <button onclick=\"sendStartGame()\">Start Game</button>
+        <button onclick="sendUploadFile()">Upload File</button>
         <script>
             var ws = new WebSocket("ws://localhost:8000/game/");
             ws.onmessage = function(event) {
@@ -62,6 +63,21 @@ html = """
                 var roomCode = getRoomCode();
                 var jsonMsg = {
                     "type": "start_game"
+                };
+                ws.send(JSON.stringify(jsonMsg));
+                var messages = document.getElementById('messages');
+                var sentMsg = document.createElement('div');
+                sentMsg.textContent = '[SEND] ' + JSON.stringify(jsonMsg);
+                sentMsg.style.color = 'gray';
+                messages.appendChild(sentMsg);
+            }
+            function sendUploadFile() {
+                // Placeholder bytes as base64 string (e.g., 'aGVsbG8=' is 'hello')
+                var placeholderBytes = btoa('placeholder-bytes');
+                var jsonMsg = {
+                    "type": "upload_file",
+                    "round_number": 1,
+                    "file_data": placeholderBytes
                 };
                 ws.send(JSON.stringify(jsonMsg));
                 var messages = document.getElementById('messages');
