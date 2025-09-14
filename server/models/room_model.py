@@ -5,5 +5,6 @@ from .types import PlayerId, PlayerName, RoomId
 
 class RoomModel(BaseModel):
     code: RoomId
-    players: dict[PlayerId, PlayerName]
+    player_ids: list[PlayerId]
+    player_names: dict[PlayerId, PlayerName]
     host_id: PlayerId
