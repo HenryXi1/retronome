@@ -32,7 +32,7 @@ const GameModeSelector: React.FC = () => {
             textTransform: 'uppercase',
             letterSpacing: '2px',
           }}>
-            🎵 REVERSE AUDIO 🎵
+            RETRONOME
           </Title>
           <Typography.Text style={{
             color: '#1e293b',
@@ -55,7 +55,7 @@ const GameModeSelector: React.FC = () => {
 
           <GameModeCard
             title="Online Multiplayer"
-            description="Up to 8 players! Watch the audio get more chaotic with each round."
+            description="Play with your friends! Watch the audio get more chaotic with each round."
             icon={<TeamOutlined style={{ fontSize: '2rem', color: 'white' }} />}
             onClick={() => handleModeSelect('online-multiplayer')}
             color="#6366f1"

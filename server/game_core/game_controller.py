@@ -196,6 +196,7 @@ class GameController:
                     await self.send_json(
                         RoomJoinedResponse(
                             room=self.room,
+                            player_id=self.player_id
                         )
                     )
 

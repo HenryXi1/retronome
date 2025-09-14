@@ -3,10 +3,8 @@ from typing import Literal, Union
 
 from pydantic import BaseModel
 
-from models.types import PlayerId
-
 from .room_model import RoomModel
-
+from .types import PlayerId
 
 class ResponseType(str, Enum):
     ROOM_CREATED = 'room_created'
@@ -27,6 +25,7 @@ class RoomCreatedResponse(BaseModel):
 class RoomJoinedResponse(BaseModel):
     type: Literal[ResponseType.ROOM_JOINED] = ResponseType.ROOM_JOINED
     room: RoomModel
+    player_id: PlayerId
 
 
 class RoomUpdatedNotification(BaseModel):

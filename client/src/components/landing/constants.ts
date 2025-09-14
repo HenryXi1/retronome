@@ -23,9 +23,9 @@ export const GAME_MODE_INFO: Record<'local' | 'online-multiplayer', GameModeInfo
     },
     'online-multiplayer': {
         title: 'Online Multiplayer',
-        description: 'Up to 8 players in the chaos!',
+        description: 'Embrace the chaos with your friends!',
         instructions: [
-            'Join with up to 8 friends',
+            'Join with your friends',
             'Everyone records a song snippet',
             'Audio gets passed around and reversed',
             'Watch the chaos unfold',

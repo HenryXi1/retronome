@@ -3,13 +3,16 @@ import PageLayout from '../shared/PageLayout';
 import RecordingPhase from './phases/RecordingPhase';
 import ReversingPhase from './phases/ReversingPhase';
 import ResultsPhase from './phases/ResultsPhase';
+import MultiplayerResultsPhase from './phases/MultiplayerResultsPhase';
 import { GameController } from './interfaces';
 
 interface GenericGameFlowProps {
     controller: GameController;
+    isMultiplayer?: boolean;
+    players?: { id: string, name: string }[];
 }
 
-const GenericGameFlow: React.FC<GenericGameFlowProps> = ({ controller }) => {
+const GenericGameFlow: React.FC<GenericGameFlowProps> = ({ controller, isMultiplayer = false, players = [] }) => {
     const renderCurrentPhase = () => {
         switch (controller.currentPhase) {
             case 'recording':
@@ -17,8 +20,8 @@ const GenericGameFlow: React.FC<GenericGameFlowProps> = ({ controller }) => {
                 return (
                     <RecordingPhase
                         currentPlayer={controller.currentPlayer}
-                        player1Name={controller.player1Name}
-                        player2Name={controller.player2Name}
+                        player1Name={controller.player1Name || 'Player 1'}
+                        player2Name={controller.player2Name || 'Player 2'}
                         timeLeft={controller.timeLeft}
                         maxTime={controller.maxTime}
                         isRecording={controller.isRecording}
@@ -35,9 +38,8 @@ const GenericGameFlow: React.FC<GenericGameFlowProps> = ({ controller }) => {
                 return (
                     <ReversingPhase
                         currentPlayer={controller.currentPlayer}
-                        player1Name={controller.player1Name}
-                        player2Name={controller.player2Name}
-                        currentAudioUrl={controller.currentAudioUrl}
+                        player1Name={controller.player1Name || 'Player 1'}
+                        player2Name={controller.player2Name || 'Player 2'}
                         currentReversedUrl={controller.currentReversedUrl}
                         onPlayAudio={controller.playAudio}
                         onNextPhase={controller.nextPhase}
@@ -45,11 +47,18 @@ const GenericGameFlow: React.FC<GenericGameFlowProps> = ({ controller }) => {
                 );
 
             case 'results':
-                return (
+                return isMultiplayer ? (
+                    <MultiplayerResultsPhase
+                        audioClips={controller.audioClips}
+                        players={players}
+                        onPlayAudio={controller.playAudio}
+                        onBackToHome={controller.backToHome}
+                    />
+                ) : (
                     <ResultsPhase
                         audioClips={controller.audioClips}
-                        player1Name={controller.player1Name}
-                        player2Name={controller.player2Name}
+                        player1Name={controller.player1Name || 'Player 1'}
+                        player2Name={controller.player2Name || 'Player 2'}
                         onPlayAudio={controller.playAudio}
                         onNextRound={controller.nextRound}
                         onBackToHome={controller.backToHome}
@@ -63,8 +72,8 @@ const GenericGameFlow: React.FC<GenericGameFlowProps> = ({ controller }) => {
 
     return (
         <PageLayout
-            title="Reverse Audio Game"
-            subtitle={`${controller.player1Name} vs ${controller.player2Name}`}
+            title="Retronome"
+            subtitle={isMultiplayer ? "Multiplayer Game" : `${controller.player1Name} vs ${controller.player2Name}`}
             backPath="/"
             backgroundClass="game-background"
         >

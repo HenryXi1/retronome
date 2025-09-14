@@ -1,142 +1,172 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GameController, AudioClip } from '../interfaces';
 import { useRecording } from '../hooks';
+import { useWebSocket } from '../../../contexts/WebSocketContext';
 
-// Multiplayer controller that implements N-round alternating reversed/original system
+// Multiplayer controller that implements server-driven round system
 export const useMultiplayerGameController = (
     gameId: string,
     playerId: string,
-    players: { id: string, name: string }[]
 ): GameController => {
     const recordingTimer = parseInt(localStorage.getItem('recordingTimer') || '30');
-    const totalPlayers = players.length;
-    const totalRounds = totalPlayers; // Round 1: everyone records, Rounds 2-N: everyone listens+records
+    const { sendMessage, addMessageHandler } = useWebSocket();
 
-    // Multiplayer state - in real app this would come from backend/socket
+    // Server-synchronized state
     const [currentRound, setCurrentRound] = useState(1);
     const [currentPhase, setCurrentPhase] = useState<GameController['currentPhase']>('recording');
     const [audioClips, setAudioClips] = useState<AudioClip[]>([]);
-    const [playersFinished, setPlayersFinished] = useState<Set<string>>(new Set());
-    const [playersInListening, setPlayersInListening] = useState<Set<string>>(new Set());
+    const [roundInProgress, setRoundInProgress] = useState(true);
+    const [currentReversedAudioUrl, setCurrentReversedAudioUrl] = useState<string | null>(null);
 
     const recording = useRecording();
 
-    // Helper functions
-    const getRecordingPlayerForRound = (round: number) => {
-        // Round 1: Player 1, Round 2: Player 2, etc.
-        return players[(round - 1) % totalPlayers];
-    };
-    
-    const getListeningPlayerForRound = (round: number) => {
-        // Round 1: No listening
-        if (round === 1) return null;
-        
-        // Rotation system: Each round, shift the listening assignment
-        // This ensures everyone hears everyone else's recordings
-        const currentPlayerIndex = players.findIndex(p => p.id === playerId);
-        
-        // Round 2: listen to player (index - 1)
-        // Round 3: listen to player (index - 2) 
-        // Round 4: listen to player (index - 3), etc.
-        const offset = round - 1; // rounds 2,3,4... → offsets 1,2,3...
-        const listenToPlayerIndex = (currentPlayerIndex - offset + totalPlayers) % totalPlayers;
-        
-        return players[listenToPlayerIndex];
-    };
-    
-    const getCurrentRecordingPlayer = () => getRecordingPlayerForRound(currentRound);
-    const getCurrentListeningPlayer = () => getListeningPlayerForRound(currentRound);
-    
-    
-    // Determine if current round should listen to reversed or original audio
-    const shouldListenToReversed = () => {
-        // Round 1: Initial recording (no listening)
-        // Round 2: Listen to reversed of Round 1
-        // Round 3: Listen to original of Round 2  
-        // Round 4: Listen to reversed of Round 3
-        // Pattern: Even rounds = reversed, Odd rounds (>1) = original
-        return currentRound > 1 && currentRound % 2 === 0;
+    // Helper function to convert base64 to playable audio URL
+    const createAudioUrlFromBase64 = (base64Data: string) => {
+        try {
+            // Convert base64 to binary
+            const binaryString = atob(base64Data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            
+            // Create blob and URL
+            const blob = new Blob([bytes], { type: 'audio/webm' });
+            return URL.createObjectURL(blob);
+        } catch (error) {
+            console.error('Error creating audio URL from base64:', error);
+            return null;
+        }
     };
 
-    // Helper to suppress gameId unused warning - would be used for backend calls
-    void gameId;
+    // WebSocket message handlers
+    useEffect(() => {
+        const handleMessage = (response: any) => {
+            console.log('🎮 MultiplayerGameController received message:', response);
+            switch (response.type) {
+                case 'game_round':
+                    const roundNumber = response.round_number;
+                    const audioBase64 = response.audio;
+                    
+                    console.log('🎮 Received game_round:', roundNumber);
+                    console.log('🎮 Audio base64 length:', audioBase64?.length);
+                    
+                    // Convert base64 audio to playable URL (this is the reversed audio)
+                    if (audioBase64) {
+                        const reversedAudioUrl = createAudioUrlFromBase64(audioBase64);
+                        setCurrentReversedAudioUrl(reversedAudioUrl);
+                    } else {
+                        setCurrentReversedAudioUrl(null);
+                    }
+                    
+                    setCurrentRound(roundNumber);
+                    setRoundInProgress(true);
+                    
+                    // First round: go to recording (no audio clips to listen to)
+                    // Subsequent rounds: go to listening (audio clips available)
+                    if (roundNumber === 1) {
+                        console.log('🎮 Starting recording phase for round 1');
+                        setCurrentPhase('recording');
+                        recording.resetRecording(recordingTimer);
+                    } else {
+                        console.log('🎮 Starting listening phase for round', roundNumber);
+                        setCurrentPhase('listening');
+                    }
+                    break;
+                    
+                case 'game_summary':
+                    setCurrentPhase('results');
+                    setAudioClips(response.audio_clips || []);
+                    setRoundInProgress(false);
+                    break;
+                    
+                default:
+                    break;
+            }
+        };
+
+        const cleanup = addMessageHandler(handleMessage);
+        return () => {
+            cleanup();
+        };
+    }, [addMessageHandler, recordingTimer, recording]);
+
 
     const confirmRecording = async () => {
-        if (!recording.recordedAudio) return;
+        console.log('🎤 confirmRecording called');
+        console.log('🎤 recordedAudio:', !!recording.recordedAudio);
+        console.log('🎤 roundInProgress:', roundInProgress);
+        console.log('🎤 currentPhase:', currentPhase);
+        
+        if (!recording.recordedAudio) {
+            console.warn('🎤 No recorded audio available');
+            return;
+        }
+        
+        if (!roundInProgress) {
+            console.warn('🎤 Round not in progress');
+            return;
+        }
 
         try {
-            // In real app, send recording to backend and get reversed version
-            const reversedUrl = await recording.reverseAudio(recording.recordedAudio);
-            
-            // Add current player to finished set
-            const newFinished = new Set(playersFinished);
-            newFinished.add(playerId);
-            setPlayersFinished(newFinished);
-
-            // Save the audio clip for this round
-            const recordingPlayer = getCurrentRecordingPlayer();
-            const newClip: AudioClip = {
-                playerId: playerId,
-                playerName: recordingPlayer?.name || 'Unknown',
-                round: currentRound,
-                originalUrl: recording.currentAudioUrl || '',
-                reversedUrl: reversedUrl,
-                isReversed: shouldListenToReversed()
-            };
-            setAudioClips(prev => [...prev, newClip]);
-
-            // Phase transition logic - everyone moves together
-            if (newFinished.size === totalPlayers) {
-                // All players finished this round's recording
-                if (currentRound >= totalRounds) {
-                    // Game complete - go to results
-                    setCurrentPhase('results');
-                } else {
-                    // Move to next round - everyone will listen first, then record
-                    setCurrentRound(prev => prev + 1);
-                    setCurrentPhase('listening');
-                    setPlayersFinished(new Set());
-                    setPlayersInListening(new Set());
+            // Convert blob to base64 for transmission
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                try {
+                    const base64Audio = reader.result as string;
+                    
+                    if (!base64Audio || !base64Audio.includes(',')) {
+                        console.error('🎤 Invalid base64 audio data');
+                        return;
+                    }
+                    
+                    // Send recording to server
+                    const message = {
+                        type: 'upload_file',
+                        round_number: currentRound,
+                        file_data: base64Audio.split(',')[1], // Remove data:audio/wav;base64, prefix
+                    };
+                    
+                    console.log('🎤 Sending recording message:', {
+                        type: message.type,
+                        round_number: message.round_number,
+                        file_data_length: message.file_data.length
+                    });
+                    
+                    sendMessage(message);
+                } catch (error) {
+                    console.error('🎤 Error processing audio data:', error);
                 }
-            }
-
+            };
+            
+            reader.onerror = (error) => {
+                console.error('🎤 FileReader error:', error);
+            };
+            
+            reader.readAsDataURL(recording.recordedAudio);
             recording.resetRecording(recordingTimer);
+            
         } catch (error) {
-            console.error('Error in multiplayer recording:', error);
+            console.error('🎤 Error in confirmRecording:', error);
         }
     };
 
     const rerecord = () => {
-        // Reset recording for current player
+        // Reset recording for current player - server will handle state
         recording.resetRecording(recordingTimer);
-        // Remove player from finished set so they can re-record
-        const newFinished = new Set(playersFinished);
-        newFinished.delete(playerId);
-        setPlayersFinished(newFinished);
     };
 
     const nextPhase = () => {
-        // Move from listening to recording (re-recording phase)
+        // Transition from listening to recording-reversed (client-side)
         if (currentPhase === 'listening') {
             setCurrentPhase('recording-reversed');
             recording.resetRecording(recordingTimer);
-            // Add player to listening completed set
-            const updatedListening = new Set(playersInListening);
-            updatedListening.add(playerId);
-            setPlayersInListening(updatedListening);
         }
     };
 
     const nextRound = () => {
-        // This would be handled automatically by confirmRecording logic
-        // but keeping for interface compatibility
-        if (currentRound < totalRounds) {
-            setCurrentRound(prev => prev + 1);
-            setCurrentPhase('recording');
-            setPlayersFinished(new Set());
-            setPlayersInListening(new Set());
-            recording.resetRecording(recordingTimer);
-        }
+        // Server handles round transitions automatically
+        // This is kept for interface compatibility
     };
 
     const backToHome = () => {
@@ -144,55 +174,40 @@ export const useMultiplayerGameController = (
         window.location.href = '/online-multiplayer/room';
     };
 
-    // Determine which audio URL to use for listening phase
-    const getListeningAudioUrl = () => {
-        if (currentRound === 1) return null; // No listening in first round
+    // Get the current audio URL for listening phase
+    const getCurrentListeningAudioUrl = () => {
+        if (currentPhase !== 'listening' || audioClips.length === 0) return null;
         
-        // Find the audio clip from the player this current player should listen to
-        const listeningToPlayer = getCurrentListeningPlayer();
-        if (!listeningToPlayer) return null;
-        
+        // Server provides the appropriate audio clips for this round
+        // For round N, listen to audio from round N-1
         const previousRoundClip = audioClips.find(clip => 
-            clip.round === currentRound - 1 && clip.playerId === listeningToPlayer.id
+            clip.round === currentRound - 1
         );
+        
         if (!previousRoundClip) return null;
         
-        return shouldListenToReversed() ? previousRoundClip.reversedUrl : previousRoundClip.originalUrl;
+        // Determine if we should listen to reversed or original based on round pattern
+        // Round 2: Listen to reversed of Round 1
+        // Round 3: Listen to original of Round 2
+        // Round 4: Listen to reversed of Round 3
+        // Pattern: Even rounds = reversed, Odd rounds (>1) = original
+        const shouldListenToReversed = currentRound > 1 && currentRound % 2 === 0;
+        
+        return shouldListenToReversed 
+            ? (previousRoundClip.reversedUrl || previousRoundClip.originalUrl)
+            : previousRoundClip.originalUrl;
     };
-
-    // Determine current player's status - everyone moves together
-    const getPlayerStatus = () => {
-        if (currentRound === 1) {
-            // Round 1: Everyone records simultaneously (no listening)
-            return { canRecord: true, canListen: false, phase: 'recording' as const };
-        } else {
-            // Round 2+: Everyone listens first, then everyone records
-            if (currentPhase === 'listening') {
-                return { canRecord: false, canListen: true, phase: 'listening' as const };
-            } else {
-                // recording-reversed phase
-                return { canRecord: true, canListen: false, phase: 'recording-reversed' as const };
-            }
-        }
-    };
-
-    const playerStatus = getPlayerStatus();
-    const effectivePhase = currentPhase === 'recording' || currentPhase === 'recording-reversed' 
-        ? (playerStatus.canRecord ? currentPhase : 'listening')
-        : currentPhase;
 
     return {
         // State
-        currentPhase: effectivePhase,
+        currentPhase,
         currentPlayer: 'player1', // All players are active in sync model
-        player1Name: `Round ${currentRound}`,
-        player2Name: currentRound > 1 ? `Listening to: ${getCurrentListeningPlayer()?.name || 'Previous Player'}` : '',
         timeLeft: recording.timeLeft,
         maxTime: recordingTimer,
         isRecording: recording.isRecording,
         recordedAudio: recording.recordedAudio,
         currentAudioUrl: recording.currentAudioUrl,
-        currentReversedUrl: getListeningAudioUrl() || null, // Use the audio they should listen to
+        currentReversedUrl: currentReversedAudioUrl,
         audioClips,
 
         // Actions

@@ -105,15 +105,22 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     }
 
     if (ws.readyState === WebSocket.OPEN) {
-      const jsonMessage = JSON.stringify(messageData);
-      ws.send(jsonMessage);
-      console.log('🚀 SENDING MESSAGE:', messageData);
-      console.log('📤 JSON SENT:', jsonMessage);
+      try {
+        const jsonMessage = JSON.stringify(messageData);
+        console.log('🚀 SENDING MESSAGE:', messageData);
+        console.log('📤 JSON length:', jsonMessage.length);
+        
+        ws.send(jsonMessage);
+        console.log('✅ Message sent successfully');
+      } catch (error) {
+        console.error('❌ Error sending message:', error);
+        message.error('Failed to send message');
+      }
     } else if (ws.readyState === WebSocket.CONNECTING) {
       console.log('⏳ WebSocket is still connecting, please wait...');
       message.warning('Connecting to server, please wait...');
     } else {
-      console.error('❌ WebSocket is not connected');
+      console.error('❌ WebSocket is not connected, state:', ws.readyState);
       message.error('Not connected to server. Please refresh the page.');
     }
   };

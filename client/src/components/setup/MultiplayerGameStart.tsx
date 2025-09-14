@@ -38,9 +38,7 @@ const MultiplayerGameStart: React.FC = () => {
       } else if (response.type === 'room_joined') {
         // Success! Joined the room
         const joinedRoomCode = response.room.code;
-        const playerId = Object.keys(response.room.players).find(
-          id => response.room.players[id] === playerName.trim()
-        );
+        const playerId = response.player_id
         
         message.success(`Successfully joined room ${joinedRoomCode}!`);
         setIsJoiningRoom(false);

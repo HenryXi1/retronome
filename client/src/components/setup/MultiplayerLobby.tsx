@@ -13,6 +13,13 @@ interface LobbyState {
   roomData?: any; // Optional initial room data
 }
 
+interface Player {
+  id: string;
+  name: string;
+  isHost: boolean;
+  isEmpty: boolean;
+}
+
 const MultiplayerLobby: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,9 +48,22 @@ const MultiplayerLobby: React.FC = () => {
       console.log('🎮 MultiplayerLobby received message:', response);
       if (response.type === 'room_created' || response.type === 'room_joined' || response.type === 'room_updated') {
         setRoomData(response.room);
-      } else if (response.type === 'game_started') {
+      } else if (response.type === 'game_round') {
         message.success('Game starting!');
-        navigate('/online-multiplayer');
+        // Store player info in localStorage for the game
+        localStorage.setItem('playerId', currentPlayerId);
+        localStorage.setItem('playerName', currentPlayerName);
+        localStorage.setItem('roomCode', roomCode);
+        
+        // Pass game data via navigation state to avoid race condition
+     
+        
+        navigate('/online-multiplayer', {
+          state: {
+            gameStarted: true,
+            room: response.room,
+          }
+        });
       } else if (response.type === 'error') {
         message.error(`Room error: ${response.error}`);
         // If room doesn't exist, go back to setup
@@ -85,10 +105,10 @@ const MultiplayerLobby: React.FC = () => {
   };
 
   // Generate players list from room data
-  const players = roomData ? 
-    Object.entries(roomData.players).map(([id, name]) => ({
+  const players: Player[] = roomData && roomData.player_ids && roomData.player_names ? 
+    roomData.player_ids.map((id: string) => ({
       id,
-      name: name as string,
+      name: roomData.player_names[id] || 'Unknown',
       isHost: id === roomData.host_id,
       isEmpty: false
     })) : 
@@ -164,7 +184,7 @@ const MultiplayerLobby: React.FC = () => {
           title={
             <div style={{ textAlign: 'center' }}>
               <Typography.Title level={3} style={{ color: '#4c1d95', margin: 0 }}>
-                Players in Room ({players.filter(p => !p.isEmpty).length}/{maxPlayers})
+                Players in Room ({players.filter((p: Player) => !p.isEmpty).length}/{maxPlayers})
               </Typography.Title>
             </div>
           }
@@ -176,7 +196,7 @@ const MultiplayerLobby: React.FC = () => {
         >
           <List
             dataSource={players}
-            renderItem={(player) => (
+            renderItem={(player: Player) => (
               <List.Item>
                 <List.Item.Meta
                   avatar={

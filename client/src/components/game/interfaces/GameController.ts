@@ -5,8 +5,8 @@ export interface GameController {
     // State
     currentPhase: GamePhase;
     currentPlayer: Player;
-    player1Name: string;
-    player2Name: string;
+    player1Name?: string;
+    player2Name?: string;
     timeLeft: number;
     maxTime: number;
     isRecording: boolean;

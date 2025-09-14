@@ -8,7 +8,6 @@ interface ReversingPhaseProps {
   currentPlayer: 'player1' | 'player2';
   player1Name: string;
   player2Name: string;
-  currentAudioUrl: string | null;
   currentReversedUrl: string | null;
   onPlayAudio: (url: string) => void;
   onNextPhase: () => void;
@@ -18,7 +17,6 @@ const ReversingPhase: React.FC<ReversingPhaseProps> = ({
   currentPlayer,
   player1Name,
   player2Name,
-  currentAudioUrl,
   currentReversedUrl,
   onPlayAudio,
   onNextPhase
