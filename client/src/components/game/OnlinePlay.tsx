@@ -48,10 +48,7 @@ const OnlinePlay: React.FC = () => {
   }, [gameState, navigate, hasRequiredData]);
 
   // Initialize the multiplayer game controller
-  const controller = useMultiplayerGameController(
-    roomCode, // Use roomCode as gameId
-    playerId,
-  );
+  const controller = useMultiplayerGameController();
 
   // Show loading state until game is ready or if missing data
   if (!hasRequiredData || !gameReady) {

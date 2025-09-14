@@ -4,10 +4,7 @@ import { useRecording } from '../hooks';
 import { useWebSocket } from '../../../contexts/WebSocketContext';
 
 // Multiplayer controller that implements server-driven round system
-export const useMultiplayerGameController = (
-    gameId: string,
-    playerId: string,
-): GameController => {
+export const useMultiplayerGameController = (): GameController => {
     const recordingTimer = parseInt(localStorage.getItem('recordingTimer') || '30');
     const { sendMessage, addMessageHandler } = useWebSocket();
 
@@ -93,11 +90,6 @@ export const useMultiplayerGameController = (
 
 
     const confirmRecording = async () => {
-        console.log('🎤 confirmRecording called');
-        console.log('🎤 recordedAudio:', !!recording.recordedAudio);
-        console.log('🎤 roundInProgress:', roundInProgress);
-        console.log('🎤 currentPhase:', currentPhase);
-        
         if (!recording.recordedAudio) {
             console.warn('🎤 No recorded audio available');
             return;
@@ -126,12 +118,6 @@ export const useMultiplayerGameController = (
                         round_number: currentRound,
                         file_data: base64Audio.split(',')[1], // Remove data:audio/wav;base64, prefix
                     };
-                    
-                    console.log('🎤 Sending recording message:', {
-                        type: message.type,
-                        round_number: message.round_number,
-                        file_data_length: message.file_data.length
-                    });
                     
                     sendMessage(message);
                 } catch (error) {
@@ -174,29 +160,6 @@ export const useMultiplayerGameController = (
         window.location.href = '/online-multiplayer/room';
     };
 
-    // Get the current audio URL for listening phase
-    const getCurrentListeningAudioUrl = () => {
-        if (currentPhase !== 'listening' || audioClips.length === 0) return null;
-        
-        // Server provides the appropriate audio clips for this round
-        // For round N, listen to audio from round N-1
-        const previousRoundClip = audioClips.find(clip => 
-            clip.round === currentRound - 1
-        );
-        
-        if (!previousRoundClip) return null;
-        
-        // Determine if we should listen to reversed or original based on round pattern
-        // Round 2: Listen to reversed of Round 1
-        // Round 3: Listen to original of Round 2
-        // Round 4: Listen to reversed of Round 3
-        // Pattern: Even rounds = reversed, Odd rounds (>1) = original
-        const shouldListenToReversed = currentRound > 1 && currentRound % 2 === 0;
-        
-        return shouldListenToReversed 
-            ? (previousRoundClip.reversedUrl || previousRoundClip.originalUrl)
-            : previousRoundClip.originalUrl;
-    };
 
     return {
         // State

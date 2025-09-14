@@ -27,6 +27,7 @@ const GenericGameFlow: React.FC<GenericGameFlowProps> = ({ controller, isMultipl
                         isRecording={controller.isRecording}
                         recordedAudio={controller.recordedAudio}
                         currentPhase={controller.currentPhase}
+                        isMultiplayer={isMultiplayer}
                         onStartRecording={controller.startRecording}
                         onStopRecording={controller.stopRecording}
                         onConfirmRecording={controller.confirmRecording}
