@@ -14,6 +14,7 @@ from models.request_schemas import (
 from models.response_schemas import (
     ErrorResponse,
     GameRoundNotification,
+    GameSummaryNotification,
     ResponseType,
     RoomCreatedResponse,
     RoomJoinedResponse,
@@ -23,6 +24,8 @@ from models.response_schemas import (
 from models.room_model import RoomModel
 
 from .redis_manager import RedisManager
+
+ROUND_DURATION = 10  # seconds
 
 
 class GameController:
@@ -132,7 +135,13 @@ class GameController:
 
     async def on_game_update(self, game: GameModel | None) -> None:
         if game is None:
-            # TODO: Handle game deletion
+            game_files = await self.file_manager.get_all_files(self.room)
+            self._game = None
+            await self.send_json(
+                GameSummaryNotification(
+                    files=game_files,
+                )
+            )
             return
         self.game = game
         # Find the i-th player after self.player_id, wrapping around
@@ -151,10 +160,13 @@ class GameController:
         )
 
     async def start_round_timer(self):
-        await asyncio.sleep(10)
+        await asyncio.sleep(ROUND_DURATION)
         await self.redis_manager.next_round(self.room.code)
         if self.game.round < len(self.room.player_ids) - 1:
             asyncio.create_task(self.start_round_timer())
+        else:
+            await asyncio.sleep(ROUND_DURATION)
+            await self.redis_manager.end_game(self.room.code)
 
     async def run(self):
         while self._room is None:
@@ -232,7 +244,7 @@ class GameController:
                 )
 
         # Main game loop
-        while True:
+        while self._game is not None:
             req_message = await self.receive_message()
 
             if req_message.type == RequestType.UPLOAD_FILE:

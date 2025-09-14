@@ -109,6 +109,9 @@ class RedisManager:
             game.model_dump_json(),
         )
 
+    async def end_game(self, room_code: str) -> None:
+        await self.redis_client.delete(f'room:{room_code}:game')
+
     async def subscribe_to_room_events(
         self,
         room_code: RoomId,
@@ -145,3 +148,5 @@ class RedisManager:
             if message['type'] == 'message' and message['data'] == 'set':
                 updated_game = await self.get_game(room_code)
                 await on_update(updated_game)
+            if message['type'] == 'message' and message['data'] == 'del':
+                await on_update(None)

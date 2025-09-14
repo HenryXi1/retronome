@@ -3,6 +3,8 @@ from typing import Literal, Union
 
 from pydantic import BaseModel
 
+from models.types import PlayerId
+
 from .room_model import RoomModel
 
 
@@ -13,6 +15,7 @@ class ResponseType(str, Enum):
     ROOM_LEFT = 'room_left'
     GAME_STARTED = 'game_started'
     GAME_ROUND = 'game_round'
+    GAME_SUMMARY = 'game_summary'
     ERROR = 'error'
 
 
@@ -45,6 +48,14 @@ class GameRoundNotification(BaseModel):
     audio: bytes | None
 
 
+class GameSummaryNotification(BaseModel):
+    type: Literal[ResponseType.GAME_SUMMARY] = ResponseType.GAME_SUMMARY
+
+    # 2d array of (player_id, original_file, reversed_file),
+    # outer array is by starting player, inner array is by round
+    files: list[list[tuple[PlayerId, bytes, bytes]]]
+
+
 class ErrorResponse(BaseModel):
     type: Literal[ResponseType.ERROR] = ResponseType.ERROR
     error: str
@@ -57,5 +68,6 @@ ResponseMessage = Union[
     RoomLeftResponse,
     GameStartedResponse,
     GameRoundNotification,
+    GameSummaryNotification,
     ErrorResponse,
 ]

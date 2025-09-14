@@ -3,9 +3,10 @@ import os
 from collections.abc import Awaitable
 from typing import Optional
 
-from server.game_core import reverse_audio
-
 from clients.redis_client import get_redis_client
+from game_core import reverse_audio
+from models.room_model import RoomModel
+from models.types import PlayerId
 
 
 class FileManager:
@@ -41,9 +42,6 @@ class FileManager:
     async def save_round_file(
         self, room_code: str, round_number: int, player_id: str, file_data: bytes
     ) -> None:
-        """
-        Saves a player's file to disk and stores its path in the Redis Hash for the round.
-        """
         file_path = os.path.join(
             self.storage_path, f'{room_code}_round{round_number}_{player_id}'
         )
@@ -65,3 +63,18 @@ class FileManager:
         )
         if isinstance(result, Awaitable):
             await result
+
+    async def get_all_files(
+        self, room: RoomModel
+    ) -> list[list[tuple[PlayerId, bytes, bytes]]]:
+        player_idxs = {pid: idx for idx, pid in enumerate(room.player_ids)}
+        keys = await self.redis_client.keys(f'game:{room.code}:round:*')
+        print(f'Found keys: {keys}')
+
+        def extract_round_num(key):
+            import re
+
+            m = re.search(r'round:(\d+)', key)
+            return int(m.group(1)) if m else 0
+
+        return []
