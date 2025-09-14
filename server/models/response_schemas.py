@@ -3,14 +3,16 @@ from typing import Literal, Union
 
 from pydantic import BaseModel
 
-from .game_models import RoomModel
+from .room_model import RoomModel
 
 
 class ResponseType(str, Enum):
     ROOM_CREATED = 'room_created'
     ROOM_JOINED = 'room_joined'
     ROOM_UPDATED = 'room_updated'
+    ROOM_LEFT = 'room_left'
     GAME_STARTED = 'game_started'
+    GAME_ROUND = 'game_round'
     ERROR = 'error'
 
 
@@ -29,8 +31,18 @@ class RoomUpdatedNotification(BaseModel):
     room: RoomModel
 
 
+class RoomLeftResponse(BaseModel):
+    type: Literal[ResponseType.ROOM_LEFT] = ResponseType.ROOM_LEFT
+
+
 class GameStartedResponse(BaseModel):
     type: Literal[ResponseType.GAME_STARTED] = ResponseType.GAME_STARTED
+
+
+class GameRoundNotification(BaseModel):
+    type: Literal[ResponseType.GAME_ROUND] = ResponseType.GAME_ROUND
+    round_number: int
+    audio: bytes | None
 
 
 class ErrorResponse(BaseModel):
@@ -42,6 +54,8 @@ ResponseMessage = Union[
     RoomCreatedResponse,
     RoomJoinedResponse,
     RoomUpdatedNotification,
+    RoomLeftResponse,
     GameStartedResponse,
+    GameRoundNotification,
     ErrorResponse,
 ]

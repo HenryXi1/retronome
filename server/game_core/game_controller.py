@@ -4,33 +4,42 @@ from uuid import uuid4
 from fastapi import WebSocket
 from pydantic import BaseModel, ValidationError
 
-from .models.game_models import RoomModel
-from .models.request_schemas import (
+from game_core.file_manager import FileManager
+from models.game_model import GameModel
+from models.request_schemas import (
     REQUEST_TYPE_MESSAGE_MAP,
     RequestMessage,
     RequestType,
 )
-from .models.response_schemas import (
+from models.response_schemas import (
     ErrorResponse,
+    GameRoundNotification,
     ResponseType,
     RoomCreatedResponse,
     RoomJoinedResponse,
+    RoomLeftResponse,
     RoomUpdatedNotification,
 )
+from models.room_model import RoomModel
+
 from .redis_manager import RedisManager
 
 
 class GameController:
     websocket: WebSocket
     redis_manager: RedisManager
+    file_manager: FileManager
     _room: RoomModel | None
+    _game: GameModel | None
     player_id: str
 
     def __init__(self, websocket: WebSocket):
         self.websocket = websocket
         self.redis_manager = RedisManager()
+        self.file_manager = FileManager()
         self.player_id = str(uuid4())
         self._room = None
+        self._game = None
 
     @property
     def room(self) -> RoomModel:
@@ -41,6 +50,16 @@ class GameController:
     @room.setter
     def room(self, value: RoomModel):
         self._room = value
+
+    @property
+    def game(self) -> GameModel:
+        if self._game is None:
+            raise AttributeError('Game has not been initialized yet')
+        return self._game
+
+    @game.setter
+    def game(self, value: GameModel):
+        self._game = value
 
     async def send_json(self, model: BaseModel):
         await self.websocket.send_json(model.model_dump())
@@ -96,6 +115,10 @@ class GameController:
         )
         return True
 
+    async def leave_room(self):
+        await self.redis_manager.remove_player_from_room(self.room.code, self.player_id)
+        self._room = None
+
     async def on_room_update(self, room: RoomModel | None) -> None:
         if room is None:
             # TODO: Handle room deletion
@@ -106,6 +129,32 @@ class GameController:
                 room=self.room,
             )
         )
+
+    async def on_game_update(self, game: GameModel | None) -> None:
+        if game is None:
+            # TODO: Handle game deletion
+            return
+        self.game = game
+        # Find the i-th player after self.player_id, wrapping around
+        player_ids = self.room.player_ids
+        idx = player_ids.index(self.player_id)
+        author_idx = (idx + game.round) % len(player_ids)
+        self.file_author = player_ids[author_idx]
+        audio_file = await self.file_manager.get_round_file(
+            self.room.code, game.round - 1, self.file_author
+        )
+        await self.send_json(
+            GameRoundNotification(
+                round_number=game.round,
+                audio=audio_file,
+            )
+        )
+
+    async def start_round_timer(self):
+        await asyncio.sleep(10)
+        await self.redis_manager.next_round(self.room.code)
+        if self.game.round < len(self.room.player_ids) - 1:
+            asyncio.create_task(self.start_round_timer())
 
     async def run(self):
         while self._room is None:
@@ -143,6 +192,59 @@ class GameController:
                         error='No room joined yet',
                     )
                 )
+        asyncio.create_task(
+            self.redis_manager.subscribe_to_game_events(
+                self.room.code, self.on_game_update
+            )
+        )
+        # Wait for either game start or room leave
+        while self._game is None:
+            req_message = await self.receive_message()
+
+            if req_message.type == RequestType.START_GAME:
+                if self.player_id != self.room.host_id:
+                    await self.send_json(
+                        ErrorResponse(
+                            error='Only the host can start the game.',
+                        )
+                    )
+                    continue
+                if len(self.room.player_ids) < 2:
+                    await self.send_json(
+                        ErrorResponse(
+                            error='At least 2 players are required to start the game.',
+                        )
+                    )
+                    continue
+                await self.redis_manager.start_game(self.room.code)
+                asyncio.create_task(self.start_round_timer())
+                break
+            elif req_message.type == RequestType.LEAVE_ROOM:
+                await self.leave_room()
+                await self.send_json(RoomLeftResponse())
+                # Restart
+                return await self.run()
+            else:
+                await self.send_json(
+                    ErrorResponse(
+                        error='Invalid action.',
+                    )
+                )
+
+        # Main game loop
         while True:
-            # Keep the connection alive
-            await asyncio.sleep(10)
+            req_message = await self.receive_message()
+
+            if req_message.type == RequestType.UPLOAD_FILE:
+                await self.file_manager.save_round_file(
+                    self.room.code,
+                    req_message.round_number,
+                    self.player_id,
+                    req_message.file_data,
+                )
+            else:
+                await self.send_json(
+                    ErrorResponse(
+                        error='Invalid action.',
+                    )
+                )
