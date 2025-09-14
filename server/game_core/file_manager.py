@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 from collections.abc import Awaitable
@@ -41,8 +42,9 @@ class FileManager:
             return f.read()
 
     async def save_round_file(
-        self, room_code: str, round_number: int, player_id: str, file_data: bytes
+        self, room_code: str, round_number: int, player_id: str, base64_data: str
     ) -> None:
+        file_data = base64.b64decode(base64_data)
         file_path = os.path.join(
             self.storage_path, f'{room_code}_round{round_number}_{player_id}'
         )

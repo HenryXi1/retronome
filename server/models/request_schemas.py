@@ -35,7 +35,7 @@ class StartGameRequest(BaseModel):
 
 class UploadFileRequest(BaseModel):
     type: Literal[RequestType.UPLOAD_FILE]
-    file_data: bytes
+    file_data: str  # base64-encoded bytes
     round_number: int
 
 
