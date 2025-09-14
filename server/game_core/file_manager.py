@@ -1,6 +1,9 @@
+import json
 import os
 from collections.abc import Awaitable
 from typing import Optional
+
+from server.game_core import reverse_audio
 
 from clients.redis_client import get_redis_client
 
@@ -18,17 +21,21 @@ class FileManager:
     async def get_round_file(
         self, room_code: str, round_number: int, player_id: str
     ) -> Optional[bytes]:
-        file_path = self.redis_client.hget(
+        file_info = self.redis_client.hget(
             f'game:{room_code}:round:{round_number}', player_id
         )
 
-        if isinstance(file_path, Awaitable):
-            file_path = await file_path
+        if isinstance(file_info, Awaitable):
+            file_info = await file_info
 
-        if not file_path or not os.path.exists(file_path):
+        if not file_info:
             return None
 
-        with open(file_path, 'rb') as f:
+        file_paths = json.loads(file_info)
+
+        reversed_file = file_paths['reversed']
+
+        with open(reversed_file, 'rb') as f:
             return f.read()
 
     async def save_round_file(
@@ -41,12 +48,20 @@ class FileManager:
             self.storage_path, f'{room_code}_round{round_number}_{player_id}'
         )
 
-        with open(file_path, 'wb') as f:
+        reversed_file_path = file_path + '_reversed'
+
+        with open(file_path + '.webm', 'wb') as f:
             f.write(file_data)
 
-        # Store the file's path in the Redis Hash as a string.
+        with open(reversed_file_path + '.webm', 'wb') as f:
+            f.write(reverse_audio(file_data))
+
+        file_info = json.dumps(
+            {'original': file_path + '.webm', 'reversed': reversed_file_path + '.webm'}
+        )
+
         result = self.redis_client.hset(
-            f'game:{room_code}:round:{round_number}', player_id, file_path
+            f'game:{room_code}:round:{round_number}', player_id, file_info
         )
         if isinstance(result, Awaitable):
             await result
