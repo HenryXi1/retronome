@@ -145,6 +145,7 @@ class GameController:
             return
         self.game = game
         # Find the i-th player after self.player_id, wrapping around
+        print(f'Game update: {game}')
         player_ids = self.room.player_ids
         idx = player_ids.index(self.player_id)
         author_idx = (idx + game.round) % len(player_ids)
@@ -230,7 +231,6 @@ class GameController:
                     continue
                 await self.redis_manager.start_game(self.room.code)
                 asyncio.create_task(self.start_round_timer())
-                break
             elif req_message.type == RequestType.LEAVE_ROOM:
                 await self.leave_room()
                 await self.send_json(RoomLeftResponse())
