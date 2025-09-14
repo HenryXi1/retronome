@@ -53,7 +53,7 @@ class GameSummaryNotification(BaseModel):
 
     # 2d array of (player_id, original_file, reversed_file),
     # outer array is by starting player, inner array is by round
-    files: list[list[tuple[PlayerId, str, str]]]
+    files: list[list[tuple[PlayerId, B64Data | None, B64Data | None]]]
 
 
 class ErrorResponse(BaseModel):

@@ -25,7 +25,7 @@ from models.room import RoomModel
 
 from .redis_manager import RedisManager
 
-ROUND_DURATION = 30  # seconds
+ROUND_DURATION = 10  # seconds
 
 
 class GameController:
@@ -247,7 +247,10 @@ class GameController:
 
             else:
                 if req_message.type == RequestType.UPLOAD_FILE:
-                    print(f'Received file upload for round {req_message.round_number}')
+                    print(
+                        f'Received file upload for round {req_message.round_number} '
+                        f'from player {self.player_id}'
+                    )
                     await self.file_manager.save_round_file(
                         self.room.code,
                         req_message.round_number,

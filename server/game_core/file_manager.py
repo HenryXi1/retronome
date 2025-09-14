@@ -70,15 +70,26 @@ class FileManager:
 
     async def get_all_files(
         self, room: RoomModel
-    ) -> list[list[tuple[PlayerId, str, str]]]:
-        player_idxs = {pid: idx for idx, pid in enumerate(room.player_ids)}
-        keys = await self.redis_client.keys(f'game:{room.code}:round:*')
-        print(f'Found keys: {keys}')
+    ) -> list[list[tuple[PlayerId, B64Data | None, B64Data | None]]]:
+        all_files = [[] for _ in range(len(room.player_ids))]
+        for round_num in range(1, len(room.player_ids) + 1):
+            content = self.redis_client.hgetall(f'game:{room.code}:round:{round_num}')
+            if isinstance(content, Awaitable):
+                content = await content
+            for i in range(0, len(room.player_ids)):
+                player_idx = (round_num + i - 1) % len(room.player_ids)
+                player_id = room.player_ids[player_idx]
+                file_info = content.get(player_id)
+                if file_info:
+                    file_paths = json.loads(file_info)
+                    with open(file_paths['original'], 'rb') as f:
+                        original_data = f.read()
+                        original_b64 = base64.b64encode(original_data).decode('utf-8')
+                    with open(file_paths['reversed'], 'rb') as f:
+                        reversed_data = f.read()
+                        reversed_b64 = base64.b64encode(reversed_data).decode('utf-8')
+                    all_files[i].append((player_id, original_b64, reversed_b64))
+                else:
+                    all_files[i].append((player_id, None, None))
 
-        def extract_round_num(key):
-            import re
-
-            m = re.search(r'round:(\d+)', key)
-            return int(m.group(1)) if m else 0
-
-        return []
+        return all_files
