@@ -13,6 +13,7 @@ html = """
         <h1>WebSocket JSON Test Client</h1>
         <div id="messages"></div>
         <button onclick="sendCreate()">Create Room</button>
+        <button onclick="sendJoin()">Join Room</button>
         <script>
             var ws = new WebSocket("ws://localhost:8000/game/");
             ws.onmessage = function(event) {
@@ -28,6 +29,15 @@ html = """
             };
             function sendCreate() {
                 var jsonMsg = { "type": "create_room", "player_name": "test" };
+                ws.send(JSON.stringify(jsonMsg));
+                var messages = document.getElementById('messages');
+                var sentMsg = document.createElement('div');
+                sentMsg.textContent = '[SEND] ' + JSON.stringify(jsonMsg);
+                sentMsg.style.color = 'gray';
+                messages.appendChild(sentMsg);
+            }
+            function sendJoin() {
+                var jsonMsg = { "type": "join_room", "room_id": "CEUK", "player_name": "test1" };
                 ws.send(JSON.stringify(jsonMsg));
                 var messages = document.getElementById('messages');
                 var sentMsg = document.createElement('div');
