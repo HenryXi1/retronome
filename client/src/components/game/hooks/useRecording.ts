@@ -31,7 +31,7 @@ export const useRecording = () => {
     const startRecording = async (maxTime: number = 30) => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const mediaRecorder = new MediaRecorder(stream);
+            const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
             mediaRecorderRef.current = mediaRecorder;
 
             const chunks: BlobPart[] = [];

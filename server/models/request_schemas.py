@@ -3,7 +3,7 @@ from typing import Literal, Union
 
 from pydantic import BaseModel
 
-from .types import PlayerName, RoomId
+from .types import B64Data, PlayerName, RoomId
 
 
 class RequestType(str, Enum):
@@ -35,7 +35,7 @@ class StartGameRequest(BaseModel):
 
 class UploadFileRequest(BaseModel):
     type: Literal[RequestType.UPLOAD_FILE]
-    file_data: str  # base64-encoded bytes
+    file_data: B64Data
     round_number: int
 
 

@@ -3,8 +3,9 @@ from typing import Literal, Union
 
 from pydantic import BaseModel
 
-from .room_model import RoomModel
-from .types import PlayerId
+from .room import RoomModel
+from .types import B64Data, PlayerId
+
 
 class ResponseType(str, Enum):
     ROOM_CREATED = 'room_created'
@@ -44,7 +45,7 @@ class GameStartedResponse(BaseModel):
 class GameRoundNotification(BaseModel):
     type: Literal[ResponseType.GAME_ROUND] = ResponseType.GAME_ROUND
     round_number: int
-    audio: str | None  # base64-encoded bytes
+    audio: B64Data | None
 
 
 class GameSummaryNotification(BaseModel):

@@ -4,8 +4,8 @@ from collections.abc import Awaitable
 from typing import Callable, Optional
 
 from clients.redis_client import get_redis_client
-from models.game_model import GameModel
-from models.room_model import RoomModel
+from models.game import GameModel
+from models.room import RoomModel
 from models.types import RoomId
 
 

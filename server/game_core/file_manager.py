@@ -5,8 +5,8 @@ from collections.abc import Awaitable
 from typing import Optional
 
 from clients.redis_client import get_redis_client
-from models.room_model import RoomModel
-from models.types import PlayerId
+from models.room import RoomModel
+from models.types import B64Data, PlayerId
 
 from .reverse_audio import reverse_audio
 
@@ -23,7 +23,7 @@ class FileManager:
 
     async def get_round_file(
         self, room_code: str, round_number: int, player_id: str
-    ) -> Optional[str]:
+    ) -> Optional[B64Data]:
         file_info = self.redis_client.hget(
             f'game:{room_code}:round:{round_number}', player_id
         )
@@ -43,7 +43,7 @@ class FileManager:
             return base64.b64encode(file_data).decode('utf-8')
 
     async def save_round_file(
-        self, room_code: str, round_number: int, player_id: str, base64_data: str
+        self, room_code: str, round_number: int, player_id: str, base64_data: B64Data
     ) -> None:
         file_data = base64.b64decode(base64_data)
         file_path = os.path.join(

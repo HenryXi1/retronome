@@ -6,3 +6,4 @@ PlayerId = str
 PlayerName = str
 RoomId = Annotated[str, constr(pattern=r'^[A-Z]{4}$')]
 FileUrl = str
+B64Data = str

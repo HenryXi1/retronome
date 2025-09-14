@@ -5,7 +5,7 @@ from fastapi import WebSocket
 from pydantic import BaseModel, ValidationError
 
 from game_core.file_manager import FileManager
-from models.game_model import GameModel
+from models.game import GameModel
 from models.request_schemas import (
     REQUEST_TYPE_MESSAGE_MAP,
     RequestMessage,
@@ -21,11 +21,11 @@ from models.response_schemas import (
     RoomLeftResponse,
     RoomUpdatedNotification,
 )
-from models.room_model import RoomModel
+from models.room import RoomModel
 
 from .redis_manager import RedisManager
 
-ROUND_DURATION = 10  # seconds
+ROUND_DURATION = 30  # seconds
 
 
 class GameController:
@@ -145,11 +145,14 @@ class GameController:
             return
         self.game = game
         # Find the i-th player after self.player_id, wrapping around
-        print(f'Game update: {game}')
+        print(f'Game update: {game}, self.player_id: {self.player_id}')
         player_ids = self.room.player_ids
         idx = player_ids.index(self.player_id)
-        author_idx = (idx + game.round) % len(player_ids)
+        author_idx = (idx + game.round - 1) % len(player_ids)
         self.file_author = player_ids[author_idx]
+        print(
+            f'File author for round {game.round} for player {self.player_id} is {self.file_author}'
+        )
         audio_file = await self.file_manager.get_round_file(
             self.room.code, game.round - 1, self.file_author
         )
@@ -194,10 +197,7 @@ class GameController:
                     )
                 else:
                     await self.send_json(
-                        RoomJoinedResponse(
-                            room=self.room,
-                            player_id=self.player_id
-                        )
+                        RoomJoinedResponse(room=self.room, player_id=self.player_id)
                     )
 
             else:
